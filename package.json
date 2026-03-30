@@ -1,0 +1,87 @@
+{
+  "name": "crypto-address-format",
+  "version": "0.0.1",
+  "description": "Universal format validation for crypto wallet addresses.",
+  "keywords": [
+    "address-validator",
+    "bitcoin",
+    "blockchain",
+    "crypto",
+    "ethereum",
+    "wallet"
+  ],
+  "homepage": "https://github.com/fantasy42/crypto-address-format#readme",
+  "bugs": {
+    "url": "https://github.com/fantasy42/crypto-address-format/issues"
+  },
+  "license": "MIT",
+  "author": "Fantasy <fntsy42@pm.me>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fantasy42/crypto-address-format.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./btc": {
+      "import": {
+        "types": "./dist/btc.d.mts",
+        "default": "./dist/btc.mjs"
+      },
+      "require": {
+        "types": "./dist/btc.d.cts",
+        "default": "./dist/btc.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp pack --watch",
+    "test": "vp test",
+    "check": "vp check",
+    "prepublishOnly": "vp run build",
+    "prepare": "vp config"
+  },
+  "devDependencies": {
+    "@noble/hashes": "^2.0.1",
+    "@types/node": "^25.5.0",
+    "@typescript/native-preview": "7.0.0-dev.20260328.1",
+    "bech32": "^2.0.0",
+    "bs58": "^6.0.0",
+    "bumpp": "^11.0.1",
+    "typescript": "^5.9.3",
+    "vite-plus": "^0.1.14"
+  },
+  "peerDependencies": {
+    "@noble/hashes": "^2.0.1",
+    "bech32": "^2.0.0",
+    "bs58": "^6.0.0"
+  },
+  "packageManager": "pnpm@10.33.0",
+  "pnpm": {
+    "overrides": {
+      "vite": "npm:@voidzero-dev/vite-plus-core@latest",
+      "vitest": "npm:@voidzero-dev/vite-plus-test@latest"
+    }
+  }
+}
