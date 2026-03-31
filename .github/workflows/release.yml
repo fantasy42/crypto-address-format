@@ -86,10 +86,14 @@ jobs:
         run: echo "version=$(node -p \"require('./package.json').version\")" >> "$GITHUB_OUTPUT"
 
       - name: Ensure release automation token is configured
-        if: ${{ secrets.RELEASE_PAT == '' }}
+        env:
+          RELEASE_PAT: ${{ secrets.RELEASE_PAT }}
+        shell: bash
         run: |
-          echo "Missing RELEASE_PAT secret. Add a fine-grained token with Contents and Pull requests write access."
-          exit 1
+          if [ -z "$RELEASE_PAT" ]; then
+            echo "Missing RELEASE_PAT secret. Add a fine-grained token with Contents and Pull requests write access."
+            exit 1
+          fi
 
       - name: Push release branch
         id: push_branch
@@ -162,6 +166,16 @@ jobs:
         run: |
           git tag "${{ steps.version.outputs.tag }}"
           git push origin "${{ steps.version.outputs.tag }}"
+
+      - name: Ensure npm token is configured
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        shell: bash
+        run: |
+          if [ -z "$NODE_AUTH_TOKEN" ]; then
+            echo "Missing NPM_TOKEN secret. Add an npm automation token in GitHub Actions secrets."
+            exit 1
+          fi
 
       - name: Publish to npm
         env:
