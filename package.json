@@ -49,6 +49,16 @@
         "default": "./dist/btc.cjs"
       }
     },
+    "./eth": {
+      "import": {
+        "types": "./dist/eth.d.mts",
+        "default": "./dist/eth.mjs"
+      },
+      "require": {
+        "types": "./dist/eth.d.cts",
+        "default": "./dist/eth.cjs"
+      }
+    },
     "./package.json": "./package.json"
   },
   "publishConfig": {

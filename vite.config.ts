@@ -8,6 +8,7 @@ export default defineConfig({
     entry: {
       index: 'src/index.ts',
       btc: 'src/btc.ts',
+      eth: 'src/eth.ts',
     },
     format: ['esm', 'cjs'],
     dts: true,

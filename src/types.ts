@@ -11,5 +11,5 @@ export type BitcoinAddressType = 'P2PKH' | 'P2SH' | 'Bech32' | 'Bech32m';
  * explains why validation failed.
  */
 export type ValidationResult =
-  | {isValid: true; type: BitcoinAddressType; address: string}
+  | {isValid: true; type: string; address: string}
   | {isValid: false; error: string};
