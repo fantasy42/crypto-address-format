@@ -1,8 +1,8 @@
 import type {ValidationResult} from './types';
 
 import {sha256} from '@noble/hashes/sha2.js';
-import {bech32, bech32m} from 'bech32';
 
+import {bech32, bech32m} from './utils/bech32';
 import base58 from './utils/base58';
 
 /**
