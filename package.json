@@ -77,15 +77,13 @@
     "@types/node": "^25.5.0",
     "@typescript/native-preview": "7.0.0-dev.20260328.1",
     "bech32": "^2.0.0",
-    "bs58": "^6.0.0",
     "bumpp": "^11.0.1",
     "typescript": "^5.9.3",
     "vite-plus": "^0.1.14"
   },
   "peerDependencies": {
     "@noble/hashes": "^2.0.1",
-    "bech32": "^2.0.0",
-    "bs58": "^6.0.0"
+    "bech32": "^2.0.0"
   },
   "packageManager": "pnpm@10.33.0",
   "pnpm": {

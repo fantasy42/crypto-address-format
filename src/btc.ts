@@ -1,8 +1,9 @@
 import type {ValidationResult} from './types';
 
-import bs58 from 'bs58';
 import {sha256} from '@noble/hashes/sha2.js';
 import {bech32, bech32m} from 'bech32';
+
+import base58 from './utils/base58';
 
 /**
  * Validates a Bitcoin mainnet address by checking its encoding and checksum.
@@ -78,7 +79,7 @@ function validateBech32(original: string, lower: string): ValidationResult {
 
 function validateBase58(address: string): ValidationResult {
   try {
-    const decoded = bs58.decode(address);
+    const decoded = base58.decode(address);
     if (decoded.length !== 25) {
       return {isValid: false, error: 'Invalid Base58 payload length'};
     }
