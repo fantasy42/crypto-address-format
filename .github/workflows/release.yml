@@ -46,14 +46,14 @@ jobs:
       - name: Setup Vite+
         uses: voidzero-dev/setup-vp@v1
         with:
-          node-version: 'lts'
+          node-version: "lts"
           cache: true
 
       - name: Setup Node.js for npm
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
 
       - name: Install dependencies
         run: vp install
@@ -136,14 +136,14 @@ jobs:
       - name: Setup Vite+
         uses: voidzero-dev/setup-vp@v1
         with:
-          node-version: 'lts'
+          node-version: "lts"
           cache: true
 
       - name: Setup Node.js for npm
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
 
       - name: Install dependencies
         run: vp install
@@ -190,7 +190,7 @@ jobs:
       - name: Publish to npm
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: vp pm publish --no-git-checks --access public --provenance
+        run: vp pm publish --no-git-checks --access public -- --provenance
 
       - name: Create GitHub release
         env:
