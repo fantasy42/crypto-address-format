@@ -3,12 +3,16 @@ import {sha256} from '@noble/hashes/sha2.js';
 import base58 from './base58';
 import {compareBytes} from './compareBytes';
 
-export interface Base58CheckResult {
-  isValid: boolean;
-  version?: number;
-  payload?: Uint8Array;
-  error?: string;
-}
+export type Base58CheckResult =
+  | {
+      isValid: true;
+      version: number;
+      payload: Uint8Array;
+    }
+  | {
+      isValid: false;
+      error: string;
+    };
 
 export function base58Check(
   address: string,

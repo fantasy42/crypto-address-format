@@ -1,15 +1,12 @@
 /**
- * Supported Bitcoin address categories returned by `validateBTC`.
- */
-export type BitcoinAddressType = 'P2PKH' | 'P2SH' | 'Bech32' | 'Bech32m';
-
-/**
- * Result of a Bitcoin address validation attempt.
+ * Represents the result of an address validation operation.
  *
- * When `isValid` is `true`, the detected address `type` and normalized
- * `address` are included. When `isValid` is `false`, an `error` message
- * explains why validation failed.
+ * This discriminated union type provides either a successful validation result
+ * with the validated address and its detected type, or a failure result with
+ * an error message.
+ *
+ * @template T - The type of address (e.g., 'Bech32', 'Ethereum'). Defaults to `string`.
  */
-export type ValidationResult =
-  | {isValid: true; type: string; address: string}
+export type ValidationResult<T extends string = string> =
+  | {isValid: true; type: T; address: string}
   | {isValid: false; error: string};

@@ -1,6 +1,20 @@
 import type {ValidationResult} from './types';
 
 import {base58Check} from './utils/base58Check';
+import {createFailure, createSuccess} from './utils/validationResult';
+
+/**
+ * Supported Tron address categories returned by `validateTRX()`.
+ */
+export type TronAddressType = 'TRON';
+
+/**
+ * Result object returned by `validateTRX()`.
+ *
+ * Contains either a validated Tron address with its detected type,
+ * or an error message if validation fails.
+ */
+export type TronValidationResult = ValidationResult<TronAddressType>;
 
 /**
  * Validates a TRON mainnet address by checking its Base58Check encoding and prefix.
@@ -12,30 +26,26 @@ import {base58Check} from './utils/base58Check';
  * @param address - The TRON address to validate.
  * @returns A `ValidationResult` indicating whether the address is valid.
  */
-export function validateTRX(address: string): ValidationResult {
+export function validateTRX(address: string): TronValidationResult {
   if (!address || typeof address !== 'string') {
-    return {isValid: false, error: 'Address must be a non-empty string'};
+    return createFailure('Address must be a non-empty string');
   }
 
   if (!address.startsWith('T')) {
-    return {isValid: false, error: 'Invalid TRON address prefix'};
+    return createFailure('Invalid TRON address prefix');
   }
 
   if (address.length !== 34) {
-    return {isValid: false, error: 'Invalid TRON address length'};
+    return createFailure('Invalid TRON address length');
   }
 
   const result = base58Check(address, 0x41);
 
   if (!result.isValid) {
-    return {isValid: false, error: result.error ?? 'Invalid TRON address'};
+    return createFailure(result.error);
   }
 
-  return {
-    isValid: true,
-    type: 'TRON',
-    address,
-  };
+  return createSuccess('TRON', address);
 }
 
 /**

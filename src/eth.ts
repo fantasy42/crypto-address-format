@@ -1,6 +1,20 @@
 import type {ValidationResult} from './types';
 
 import {keccak_256} from '@noble/hashes/sha3.js';
+import {createFailure, createSuccess} from './utils/validationResult';
+
+/**
+ * Supported Ethereum address categories returned by `validateETH()`.
+ */
+export type EthereumAddressType = 'Ethereum';
+
+/**
+ * Result object returned by `validateETH()`.
+ *
+ * Contains either a validated Ethereum address with its detected type,
+ * or an error message if validation fails.
+ */
+export type ETHValidationResult = ValidationResult<EthereumAddressType>;
 
 /**
  * Validates an Ethereum mainnet address by checking its format and EIP-55 checksum.
@@ -12,20 +26,20 @@ import {keccak_256} from '@noble/hashes/sha3.js';
  * @param address - The Ethereum address to validate.
  * @returns A `ValidationResult` indicating whether the address is valid.
  */
-export function validateETH(address: string): ValidationResult {
+export function validateETH(address: string): ETHValidationResult {
   if (!address || typeof address !== 'string') {
-    return {isValid: false, error: 'Address must be a non-empty string'};
+    return createFailure('Address must be a non-empty string');
   }
 
   const hasCorrectPrefix = address.startsWith('0x') || address.startsWith('0X');
 
   if (address.length !== 42 || !hasCorrectPrefix) {
-    return {isValid: false, error: 'Invalid Ethereum address length or prefix'};
+    return createFailure('Invalid Ethereum address length or prefix');
   }
 
   const hexPart = address.slice(2);
   if (!/^[0-9a-fA-F]{40}$/.test(hexPart)) {
-    return {isValid: false, error: 'Invalid hexadecimal characters'};
+    return createFailure('Invalid hexadecimal characters');
   }
 
   // If it's mixed case, validate EIP-55 checksum
@@ -36,14 +50,10 @@ export function validateETH(address: string): ValidationResult {
     return validateEIP55(address);
   }
 
-  return {
-    isValid: true,
-    type: 'Ethereum',
-    address: address.toLowerCase(),
-  };
+  return createSuccess('Ethereum', address.toLowerCase());
 }
 
-function validateEIP55(address: string): ValidationResult {
+function validateEIP55(address: string): ETHValidationResult {
   const hexPart = address.slice(2);
   const lowercaseAddr = hexPart.toLowerCase();
 
@@ -63,15 +73,11 @@ function validateEIP55(address: string): ValidationResult {
 
     // EIP-55 rule: nibble >= 8 means uppercase, < 8 means lowercase
     if ((nibble >= 8 && !isUpper) || (nibble < 8 && isUpper)) {
-      return {isValid: false, error: 'Invalid EIP-55 checksum'};
+      return createFailure('Invalid EIP-55 checksum');
     }
   }
 
-  return {
-    isValid: true,
-    type: 'Ethereum',
-    address: `0x${lowercaseAddr}`,
-  };
+  return createSuccess('Ethereum', `0x${lowercaseAddr}`);
 }
 
 /**
