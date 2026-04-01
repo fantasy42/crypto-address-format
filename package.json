@@ -59,6 +59,36 @@
         "default": "./dist/eth.cjs"
       }
     },
+    "./usdt-erc20": {
+      "import": {
+        "types": "./dist/eth.d.mts",
+        "default": "./dist/eth.mjs"
+      },
+      "require": {
+        "types": "./dist/eth.d.cts",
+        "default": "./dist/eth.cjs"
+      }
+    },
+    "./trx": {
+      "import": {
+        "types": "./dist/trx.d.mts",
+        "default": "./dist/trx.mjs"
+      },
+      "require": {
+        "types": "./dist/trx.d.cts",
+        "default": "./dist/trx.cjs"
+      }
+    },
+    "./usdt-trc20": {
+      "import": {
+        "types": "./dist/trx.d.mts",
+        "default": "./dist/trx.mjs"
+      },
+      "require": {
+        "types": "./dist/trx.d.cts",
+        "default": "./dist/trx.cjs"
+      }
+    },
     "./package.json": "./package.json"
   },
   "publishConfig": {

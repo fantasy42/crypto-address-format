@@ -73,3 +73,16 @@ function validateEIP55(address: string): ValidationResult {
     address: `0x${lowercaseAddr}`,
   };
 }
+
+/**
+ * Validates an ERC-20 token address (such as USDT or USDC) on the Ethereum network.
+ *
+ * Since ERC-20 tokens use the standard Ethereum address format, this function
+ * checks for the `0x` prefix and verifies the EIP-55 checksum if the address
+ * is mixed-case. It ensures the address is a visually and cryptographically
+ * valid destination for token transfers.
+ *
+ * @param address - The ERC-20 address to validate.
+ * @returns A `ValidationResult` indicating whether the address is valid.
+ */
+export const validateERC20 = validateETH;

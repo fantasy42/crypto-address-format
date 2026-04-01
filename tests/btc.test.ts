@@ -60,7 +60,7 @@ describe('validatebtc', () => {
       expect(result.isValid).toBe(false);
 
       if (!result.isValid) {
-        expect(result.error).toContain('checksum');
+        expect(result.error).toContain('Checksum mismatch');
       }
     });
 

@@ -1,9 +1,7 @@
 import type {ValidationResult} from './types';
 
-import {sha256} from '@noble/hashes/sha2.js';
-
 import {bech32, bech32m} from './utils/bech32';
-import base58 from './utils/base58';
+import {base58Check} from './utils/base58Check';
 
 /**
  * Validates a Bitcoin mainnet address by checking its encoding and checksum.
@@ -78,42 +76,25 @@ function validateBech32(original: string, lower: string): ValidationResult {
 }
 
 function validateBase58(address: string): ValidationResult {
-  try {
-    const decoded = base58.decode(address);
-    if (decoded.length !== 25) {
-      return {isValid: false, error: 'Invalid Base58 payload length'};
-    }
+  const result = base58Check(address);
 
-    const version = decoded[0];
-    const payload = decoded.slice(0, -4);
-    const checksum = decoded.slice(-4);
-
-    // Double SHA256 hashing is the standard for Base58Check
-    const expectedChecksum = sha256(sha256(payload)).slice(0, 4);
-
-    if (!compareBytes(checksum, expectedChecksum)) {
-      return {isValid: false, error: 'Base58 checksum mismatch'};
-    }
-
+  if (!result.isValid) {
     return {
-      isValid: true,
-      type: version === 0x00 ? 'P2PKH' : 'P2SH',
-      address,
+      isValid: false,
+      error: result.error ?? 'Invalid Base58Check address',
     };
-  } catch {
-    return {isValid: false, error: 'Invalid Base58 encoding'};
-  }
-}
-
-function compareBytes(a: Uint8Array, b: Uint8Array): boolean {
-  if (a.length !== b.length) {
-    return false;
   }
 
-  let result = 0;
-  for (let i = 0; i < a.length; i++) {
-    result |= a[i] ^ b[i];
+  const isP2PKH = result.version === 0x00;
+  const isP2SH = result.version === 0x05;
+
+  if (!isP2PKH && !isP2SH) {
+    return {isValid: false, error: 'Unsupported Bitcoin address version'};
   }
 
-  return result === 0;
+  return {
+    isValid: true,
+    type: isP2PKH ? 'P2PKH' : 'P2SH',
+    address,
+  };
 }
