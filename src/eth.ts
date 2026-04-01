@@ -17,7 +17,9 @@ export function validateETH(address: string): ValidationResult {
     return {isValid: false, error: 'Address must be a non-empty string'};
   }
 
-  if (address.length !== 42 || !address.toLowerCase().startsWith('0x')) {
+  const hasCorrectPrefix = address.startsWith('0x') || address.startsWith('0X');
+
+  if (address.length !== 42 || !hasCorrectPrefix) {
     return {isValid: false, error: 'Invalid Ethereum address length or prefix'};
   }
 
@@ -26,9 +28,11 @@ export function validateETH(address: string): ValidationResult {
     return {isValid: false, error: 'Invalid hexadecimal characters'};
   }
 
-  // If the address is mixed-case, it must validate against EIP-55.
-  // If it's all one case, we treat it as a valid un-checksummed address.
-  if (hexPart !== hexPart.toLowerCase() && hexPart !== hexPart.toUpperCase()) {
+  // If it's mixed case, validate EIP-55 checksum
+  const isLowercase = hexPart === hexPart.toLowerCase();
+  const isUppercase = hexPart === hexPart.toUpperCase();
+
+  if (!isLowercase && !isUppercase) {
     return validateEIP55(address);
   }
 
@@ -40,36 +44,32 @@ export function validateETH(address: string): ValidationResult {
 }
 
 function validateEIP55(address: string): ValidationResult {
-  const stripAddr = address.slice(2).toLowerCase();
-  const originalHex = address.slice(2);
+  const hexPart = address.slice(2);
+  const lowercaseAddr = hexPart.toLowerCase();
 
-  // EIP-55 hashes the UTF-8 bytes of the lowercase hexadecimal string.
-  const hash = keccak_256(new TextEncoder().encode(stripAddr));
+  const hash = keccak_256(new TextEncoder().encode(lowercaseAddr));
 
   for (let i = 0; i < 40; i++) {
-    const char = originalHex[i];
+    const char = hexPart[i];
 
-    // We only need to check alphabetical characters (a-f, A-F).
-    if (/[a-fA-F]/.test(char)) {
-      // Each byte in the hash covers 2 hex characters.
-      // High nibble for even indices, low nibble for odd indices.
-      const hashByte = hash[i >> 1];
-      const hashNibble = i % 2 === 0 ? hashByte >> 4 : hashByte & 0x0f;
+    // Numbers (0-9) don't have case, so we skip them
+    if (char >= '0' && char <= '9') {
+      continue;
+    }
 
-      // EIP-55 Rule: If the nibble is >= 8, the letter must be uppercase.
-      if (hashNibble >= 8 && char !== char.toUpperCase()) {
-        return {isValid: false, error: 'Invalid EIP-55 checksum'};
-      }
-      // If the nibble is < 8, the letter must be lowercase.
-      if (hashNibble < 8 && char !== char.toLowerCase()) {
-        return {isValid: false, error: 'Invalid EIP-55 checksum'};
-      }
+    const byte = hash[i >> 1];
+    const nibble = i % 2 === 0 ? byte >> 4 : byte & 0x0f;
+    const isUpper = char === char.toUpperCase();
+
+    // EIP-55 rule: nibble >= 8 means uppercase, < 8 means lowercase
+    if ((nibble >= 8 && !isUpper) || (nibble < 8 && isUpper)) {
+      return {isValid: false, error: 'Invalid EIP-55 checksum'};
     }
   }
 
   return {
     isValid: true,
     type: 'Ethereum',
-    address: address.toLowerCase(),
+    address: `0x${lowercaseAddr}`,
   };
 }
