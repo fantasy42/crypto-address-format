@@ -49,6 +49,7 @@
         "default": "./dist/*.cjs"
       }
     },
+    "./index": null,
     "./package.json": "./package.json"
   },
   "publishConfig": {
