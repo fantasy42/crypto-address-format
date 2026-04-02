@@ -15,6 +15,12 @@ export {
   type TronValidationResult,
   type TronAddressType,
 } from './chains/trx';
+export {
+  validateBNB,
+  validateBEP20,
+  type BNBAddressType,
+  type BNBValidationResult,
+} from './chains/bnb';
 
 export {
   validateUSDTERC20,
@@ -26,5 +32,10 @@ export {
   type USDTTRC20AddressType,
   type USDTTRC20ValidationResult,
 } from './aliases/usdt-trc20';
+export {
+  validateUSDTBEP20,
+  type USDTBEP20AddressType,
+  type USDTBEP20ValidationResult,
+} from './aliases/usdt-bep20';
 
 export type {ValidationResult} from './types';
