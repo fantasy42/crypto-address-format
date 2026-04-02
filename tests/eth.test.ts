@@ -1,6 +1,6 @@
 import {describe, it, expect} from 'vite-plus/test';
 
-import {validateETH} from '../src/eth';
+import {validateETH} from '../src/chains/eth';
 
 describe('validateeth', () => {
   describe('positive cases (valid mainnet)', () => {

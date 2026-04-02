@@ -1,4 +1,23 @@
 import {defineConfig} from 'vite-plus';
+import {readdirSync} from 'node:fs';
+import path from 'node:path';
+
+const getEntries = (dir: string) => {
+  const absolutePath = path.join(process.cwd(), dir);
+  const files = readdirSync(absolutePath);
+
+  const entries: Record<string, string> = {};
+
+  for (const file of files) {
+    const {name, ext} = path.parse(file);
+
+    if (ext === '.ts' && !file.includes('.test')) {
+      entries[name] = `${dir}/${file}`;
+    }
+  }
+
+  return entries;
+};
 
 export default defineConfig({
   staged: {
@@ -7,11 +26,8 @@ export default defineConfig({
   pack: {
     entry: {
       index: 'src/index.ts',
-      btc: 'src/btc.ts',
-      eth: 'src/eth.ts',
-      'usdt-erc20': 'src/eth.ts',
-      trx: 'src/trx.ts',
-      'usdt-trc20': 'src/trx.ts',
+      ...getEntries('src/chains'),
+      ...getEntries('src/aliases'),
     },
     format: ['esm', 'cjs'],
     dts: true,

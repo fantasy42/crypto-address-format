@@ -1,7 +1,8 @@
-import type {ValidationResult} from './types';
+import type {ValidationResult} from '../types';
 
 import {keccak_256} from '@noble/hashes/sha3.js';
-import {createFailure, createSuccess} from './utils/validationResult';
+
+import {createFailure, createSuccess} from '../utils/validationResult';
 
 /**
  * Supported Ethereum address categories returned by `validateETH()`.

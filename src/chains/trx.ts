@@ -1,7 +1,7 @@
-import type {ValidationResult} from './types';
+import type {ValidationResult} from '../types';
 
-import {base58Check} from './utils/base58Check';
-import {createFailure, createSuccess} from './utils/validationResult';
+import {base58Check} from '../utils/base58Check';
+import {createFailure, createSuccess} from '../utils/validationResult';
 
 /**
  * Supported Tron address categories returned by `validateTRX()`.

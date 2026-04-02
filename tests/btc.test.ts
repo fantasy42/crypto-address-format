@@ -1,6 +1,6 @@
 import {describe, it, expect} from 'vite-plus/test';
 
-import {validateBTC} from '../src/btc';
+import {validateBTC} from '../src/chains/btc';
 
 describe('validatebtc', () => {
   describe('positive cases (valid mainnet)', () => {

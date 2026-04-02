@@ -1,8 +1,8 @@
-import type {ValidationResult} from './types';
+import type {ValidationResult} from '../types';
 
-import {bech32, bech32m} from './utils/bech32';
-import {base58Check} from './utils/base58Check';
-import {createFailure, createSuccess} from './utils/validationResult';
+import {bech32, bech32m} from '../utils/bech32';
+import {base58Check} from '../utils/base58Check';
+import {createFailure, createSuccess} from '../utils/validationResult';
 
 /**
  * Supported Bitcoin address categories returned by `validateBTC()`.
