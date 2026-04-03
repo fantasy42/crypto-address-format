@@ -39,24 +39,94 @@
         "types": "./dist/index.d.cts"
       }
     },
-    "./*": {
+    "./bnb": {
       "import": {
-        "default": "./dist/*.mjs",
-        "types": "./dist/*.d.mts"
+        "default": "./dist/bnb.mjs",
+        "types": "./dist/bnb.d.mts"
       },
       "require": {
-        "default": "./dist/*.cjs",
-        "types": "./dist/*.d.cts"
+        "default": "./dist/bnb.cjs",
+        "types": "./dist/bnb.d.cts"
       }
     },
-    "./index": null,
+    "./btc": {
+      "import": {
+        "default": "./dist/btc.mjs",
+        "types": "./dist/btc.d.mts"
+      },
+      "require": {
+        "default": "./dist/btc.cjs",
+        "types": "./dist/btc.d.cts"
+      }
+    },
+    "./eth": {
+      "import": {
+        "default": "./dist/eth.mjs",
+        "types": "./dist/eth.d.mts"
+      },
+      "require": {
+        "default": "./dist/eth.cjs",
+        "types": "./dist/eth.d.cts"
+      }
+    },
+    "./trx": {
+      "import": {
+        "default": "./dist/trx.mjs",
+        "types": "./dist/trx.d.mts"
+      },
+      "require": {
+        "default": "./dist/trx.cjs",
+        "types": "./dist/trx.d.cts"
+      }
+    },
+    "./xrp": {
+      "import": {
+        "default": "./dist/xrp.mjs",
+        "types": "./dist/xrp.d.mts"
+      },
+      "require": {
+        "default": "./dist/xrp.cjs",
+        "types": "./dist/xrp.d.cts"
+      }
+    },
+    "./usdt-bep20": {
+      "import": {
+        "default": "./dist/usdt-bep20.mjs",
+        "types": "./dist/usdt-bep20.d.mts"
+      },
+      "require": {
+        "default": "./dist/usdt-bep20.cjs",
+        "types": "./dist/usdt-bep20.d.cts"
+      }
+    },
+    "./usdt-erc20": {
+      "import": {
+        "default": "./dist/usdt-erc20.mjs",
+        "types": "./dist/usdt-erc20.d.mts"
+      },
+      "require": {
+        "default": "./dist/usdt-erc20.cjs",
+        "types": "./dist/usdt-erc20.d.cts"
+      }
+    },
+    "./usdt-trc20": {
+      "import": {
+        "default": "./dist/usdt-trc20.mjs",
+        "types": "./dist/usdt-trc20.d.mts"
+      },
+      "require": {
+        "default": "./dist/usdt-trc20.cjs",
+        "types": "./dist/usdt-trc20.d.cts"
+      }
+    },
     "./package.json": "./package.json"
   },
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
-    "build": "vp pack",
+    "prebuild": "node --experimental-strip-types scripts/generateExports.ts",
+    "build": "vp run prebuild && vp pack",
     "dev": "vp pack --watch",
     "test": "vp test",
     "check": "vp check",
