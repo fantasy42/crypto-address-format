@@ -35,33 +35,37 @@ if (result.isValid) {
 
 ## Validators
 
-### `validateBTC(address)`
+`validateBTC(address)`
 
 Validates Bitcoin mainnet addresses including **Legacy (P2PKH)**, **Nested SegWit (P2SH)**, **Native SegWit (Bech32)**, and **Taproot (Bech32m)**.
 
-### `validateETH(address)`
+`validateETH(address)` / `validateERC20(address)`
 
 Validates Ethereum mainnet addresses using **EIP-55** checksum integrity.
 
-### `validateERC20(address)` / `validateUSDTERC20(address)`
+`validateUSDTERC20(address)`
 
-Aliases for validateETH. Validates Ethereum-based token addresses.
+Alias for `validateETH`. Validates Ethereum-based **USDT** (ERC-20) destination addresses.
 
-### `validateTRX(address)`
+`validateTRX(address)` / `validateTRC20(address)`
 
 Validates TRON mainnet addresses using **Base58Check** encoding.
 
-### `validateTRC20(address)` / `validateUSDTTRC20(address)`
+`validateUSDTTRC20(address)`
 
-Aliases for `validateTRX`. Validates TRON-based token addresses (TRC-20), including USDT.
+Alias for `validateTRX`. Specifically validates TRON-based **USDT** (TRC-20) destination addresses.
 
-### `validateBNB(address)`
+`validateBNB(address)` / `validateBEP20(address)`
 
 Validates BNB Smart Chain (**BSC**) addresses using EVM-compatible EIP-55 checksums.
 
-### `validateBEP20(address)` / `validateUSDTBEP20(address)`
+`validateUSDTBEP20(address)`
 
-Aliases for `validateBNB`. Validates BSC-based token addresses.
+Alias for `validateBNB`. Specifically validates BSC-based **USDT** (BEP-20) destination addresses.
+
+`validateXRP(address)`
+
+Validates XRP Ledger addresses, supporting both **Classic (r-prefix)** and **Mainnet X-Addresses** using double-SHA256 checksums.
 
 ## Modular Imports
 
