@@ -21,6 +21,11 @@ export {
   type BNBAddressType,
   type BNBValidationResult,
 } from './chains/bnb';
+export {
+  validateXRP,
+  type XRPAddressType,
+  type XRPValidationResult,
+} from './chains/xrp';
 
 export {
   validateUSDTERC20,

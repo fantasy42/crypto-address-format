@@ -2,6 +2,7 @@ import type {ValidationResult} from '../types';
 
 import {bech32, bech32m} from '../utils/bech32';
 import {base58Check} from '../utils/base58Check';
+import {base58Btc} from '../utils/base58';
 import {createFailure, createSuccess} from '../utils/validationResult';
 
 /**
@@ -86,7 +87,9 @@ function validateBech32(original: string, lower: string): BTCValidationResult {
 }
 
 function validateBase58(address: string): BTCValidationResult {
-  const result = base58Check(address);
+  const result = base58Check(address, {
+    codec: base58Btc,
+  });
 
   if (!result.isValid) {
     return createFailure(result.error);

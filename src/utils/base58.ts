@@ -1,6 +1,5 @@
 import {createBaseCodec} from './baseCodec';
+import {BTC_ALPHABET, XRP_ALPHABET} from './alphabets';
 
-const ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-const base58 = createBaseCodec(ALPHABET);
-
-export default base58;
+export const base58Btc = createBaseCodec(BTC_ALPHABET);
+export const base58Xrp = createBaseCodec(XRP_ALPHABET);

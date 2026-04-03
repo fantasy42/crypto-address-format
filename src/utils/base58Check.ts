@@ -1,6 +1,7 @@
+import type {BaseCodec} from './baseCodec';
+
 import {sha256} from '@noble/hashes/sha2.js';
 
-import base58 from './base58';
 import {compareBytes} from './compareBytes';
 
 export type Base58CheckResult =
@@ -14,12 +15,19 @@ export type Base58CheckResult =
       error: string;
     };
 
+export interface Base58CheckOptions {
+  codec: BaseCodec;
+  expectedVersion?: number | number[];
+}
+
 export function base58Check(
   address: string,
-  expectedVersion?: number
+  options: Base58CheckOptions
 ): Base58CheckResult {
   try {
-    const decoded = base58.decode(address);
+    const {codec, expectedVersion} = options;
+
+    const decoded = codec.decode(address);
     if (decoded.length < 5) {
       return {isValid: false, error: 'Payload too short'};
     }
@@ -27,29 +35,34 @@ export function base58Check(
     const data = decoded.subarray(0, -4);
     const checksum = decoded.subarray(-4);
 
-    const firstHash = sha256(data);
-    const secondHash = sha256(firstHash);
-    const expectedChecksum = secondHash.slice(0, 4);
+    const expectedChecksum = sha256(sha256(data)).subarray(0, 4);
 
     if (!compareBytes(checksum, expectedChecksum)) {
       return {isValid: false, error: 'Checksum mismatch'};
     }
 
-    const version = decoded[0];
-    if (expectedVersion !== undefined && version !== expectedVersion) {
-      const got = version.toString(16).padStart(2, '0');
-      const expected = expectedVersion.toString(16).padStart(2, '0');
+    const versions =
+      expectedVersion !== undefined
+        ? Array.isArray(expectedVersion)
+          ? expectedVersion
+          : [expectedVersion]
+        : [decoded[0]];
 
-      return {
-        isValid: false,
-        error: `Address version mismatch: expected 0x${expected}, got 0x${got}`,
-      };
+    const versionsLength = versions.length;
+    const actualVersion = decoded.subarray(0, versionsLength);
+
+    if (expectedVersion !== undefined) {
+      const expectedBuffer = new Uint8Array(versions);
+
+      if (!compareBytes(actualVersion, expectedBuffer)) {
+        return {isValid: false, error: 'Version mismatch'};
+      }
     }
 
     return {
       isValid: true,
-      version,
-      payload: decoded.subarray(1, -4),
+      version: actualVersion[0],
+      payload: decoded.subarray(versionsLength, -4),
     };
   } catch {
     return {isValid: false, error: 'Invalid Base58 encoding'};

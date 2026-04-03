@@ -1,6 +1,7 @@
 import type {ValidationResult} from '../types';
 
 import {base58Check} from '../utils/base58Check';
+import {base58Btc} from '../utils/base58';
 import {createFailure, createSuccess} from '../utils/validationResult';
 
 /**
@@ -39,7 +40,10 @@ export function validateTRX(address: string): TronValidationResult {
     return createFailure('Invalid TRON address length');
   }
 
-  const result = base58Check(address, 0x41);
+  const result = base58Check(address, {
+    codec: base58Btc,
+    expectedVersion: 0x41,
+  });
 
   if (!result.isValid) {
     return createFailure(result.error);
