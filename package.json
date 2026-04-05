@@ -69,6 +69,16 @@
         "types": "./dist/eth.d.cts"
       }
     },
+    "./polygon": {
+      "import": {
+        "default": "./dist/polygon.mjs",
+        "types": "./dist/polygon.d.mts"
+      },
+      "require": {
+        "default": "./dist/polygon.cjs",
+        "types": "./dist/polygon.d.cts"
+      }
+    },
     "./trx": {
       "import": {
         "default": "./dist/trx.mjs",
