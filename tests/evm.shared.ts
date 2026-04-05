@@ -2,11 +2,15 @@ import type {ValidationResult} from '../src/types';
 
 import {describe, it, expect} from 'vite-plus/test';
 
+import {runBaseValidatorTests} from './base.shared';
+
 export function runEVMTestSuite(
   validateFn: (addr: string) => ValidationResult<string>,
   label: string
 ) {
   describe(`validate${label.toLowerCase()}`, () => {
+    runBaseValidatorTests(validateFn);
+
     describe('positive cases', () => {
       it(`validates a valid eip-55 checksum address for ${label}`, () => {
         const addr = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045';
@@ -84,16 +88,6 @@ export function runEVMTestSuite(
         expect(
           validateFn('0x!8dA6BF26964aF9D7eEd9e03E53415D37aA96045').isValid
         ).toBe(false); // Special char
-      });
-    });
-
-    describe('edge cases', () => {
-      it('handles empty or non-string input gracefully', () => {
-        // @ts-expect-error
-        expect(validateFn(null).isValid).toBe(false);
-        expect(validateFn('').isValid).toBe(false);
-        // @ts-expect-error
-        expect(validateFn(undefined).isValid).toBe(false);
       });
     });
   });

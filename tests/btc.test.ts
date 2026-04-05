@@ -1,8 +1,11 @@
 import {describe, it, expect} from 'vite-plus/test';
 
 import {validateBTC} from '../src/chains/btc';
+import {runBaseValidatorTests} from './base.shared';
 
 describe('validatebtc', () => {
+  runBaseValidatorTests(validateBTC);
+
   describe('positive cases (valid mainnet)', () => {
     it('validates legacy (p2pkh)', () => {
       const result = validateBTC('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa');
@@ -102,12 +105,6 @@ describe('validatebtc', () => {
   });
 
   describe('edge cases', () => {
-    it('handles empty or non-string input gracefully', () => {
-      // @ts-expect-error
-      expect(validateBTC(null).isValid).toBe(false);
-      expect(validateBTC('').isValid).toBe(false);
-    });
-
     it('handles unsupported prefixes', () => {
       expect(validateBTC('4A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa').isValid).toBe(
         false

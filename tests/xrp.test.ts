@@ -1,7 +1,11 @@
 import {describe, it, expect} from 'vite-plus/test';
+
 import {validateXRP} from '../src/chains/xrp';
+import {runBaseValidatorTests} from './base.shared';
 
 describe('validateXRP', () => {
+  runBaseValidatorTests(validateXRP);
+
   describe('positive cases (valid addresses)', () => {
     it('validates a standard classic r-address', () => {
       const address = 'rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh';
@@ -77,14 +81,6 @@ describe('validateXRP', () => {
   });
 
   describe('edge cases', () => {
-    it('handles empty or non-string input gracefully', () => {
-      // @ts-expect-error
-      expect(validateXRP(null).isValid).toBe(false);
-      expect(validateXRP('').isValid).toBe(false);
-      // @ts-expect-error
-      expect(validateXRP(undefined).isValid).toBe(false);
-    });
-
     it('handles other chain formats (ETH and BTC)', () => {
       // Ethereum
       expect(

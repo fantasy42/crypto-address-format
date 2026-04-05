@@ -1,8 +1,11 @@
 import {describe, it, expect} from 'vite-plus/test';
 
 import {validateTRX} from '../src/chains/trx';
+import {runBaseValidatorTests} from './base.shared';
 
 describe('validatetrx', () => {
+  runBaseValidatorTests(validateTRX);
+
   describe('positive cases (valid mainnet)', () => {
     it('validates a standard TRON address (T-prefix)', () => {
       // TRON Foundation address
@@ -67,14 +70,6 @@ describe('validatetrx', () => {
   });
 
   describe('edge cases', () => {
-    it('handles empty or non-string input gracefully', () => {
-      // @ts-expect-error - testing runtime safety
-      expect(validateTRX(null).isValid).toBe(false);
-      expect(validateTRX('').isValid).toBe(false);
-      // @ts-expect-error
-      expect(validateTRX(undefined).isValid).toBe(false);
-    });
-
     it('handles unexpected formats', () => {
       expect(validateTRX('ethereum_style_0x123...').isValid).toBe(false);
       expect(
