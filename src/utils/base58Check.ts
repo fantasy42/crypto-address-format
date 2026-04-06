@@ -4,7 +4,7 @@ import {sha256} from '@noble/hashes/sha2.js';
 
 import {compareBytes} from './compareBytes';
 
-export type Base58CheckResult =
+type Base58CheckResult =
   | {
       isValid: true;
       version: number;
@@ -15,7 +15,7 @@ export type Base58CheckResult =
       error: string;
     };
 
-export interface Base58CheckOptions {
+interface Base58CheckOptions {
   codec: BaseCodec;
   expectedVersion?: number | number[];
 }
