@@ -67,6 +67,10 @@ Alias for `validateBNB`. Specifically validates BSC-based **USDT** (BEP-20) dest
 
 Validates XRP Ledger addresses, supporting both **Classic (r-prefix)** and **Mainnet X-Addresses** using double-SHA256 checksums.
 
+`validatePolygon(address)` / `validateMatic(address)`
+
+Validates Polygon (PoS) mainnet addresses using **EIP-55** checksum integrity.
+
 ## Modular Imports
 
 For optimized bundle sizes, you can import any validator directly from its specific entry point:
@@ -93,9 +97,25 @@ type ValidationResult<T extends string> =
     };
 ```
 
-## License
+## Contributing
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Development happens in the open on GitHub and we are grateful for contributions including bug fixes, improvements, and ideas.
+
+### Code of Conduct
+
+This project expects all participants to adhere to the project’s [Code of Conduct](.github/CODE_OF_CONDUCT.md). Please read the full text so that you can understand what actions will and will not be tolerated.
+
+### Contributing Guide
+
+Read the [contributing guide](.github/CONTRIBUTING.md) to learn about our development process, how to propose bug fixes and improvements, and how to build and test your changes.
+
+### Security
+
+If you discover a security vulnerability, please follow the [security policy](.github/SECURITY.md) instead of opening a public issue.
+
+### License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ---
 
