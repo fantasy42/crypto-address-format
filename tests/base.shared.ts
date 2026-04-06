@@ -25,5 +25,30 @@ export function runBaseValidatorTests(
         expect(result.isValid).toBe(false);
       });
     });
+
+    it('should fail on objects disguised as strings', () => {
+      const fakeString = {
+        toString: () => '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
+      };
+      const result = validateFn(fakeString as any);
+      expect(result.isValid).toBe(false);
+    });
+
+    it('should fail safely on extremely long strings', () => {
+      const veryLongString = '0x' + 'a'.repeat(10000);
+      const result = validateFn(veryLongString);
+      expect(result.isValid).toBe(false);
+    });
+
+    it('should handle strings with control/unicode characters safely', () => {
+      const inputs = [
+        '0xd8dA6BF\u000026964aF9D7eEd9e03E53415D37aA96045',
+        '😃😃😃',
+      ];
+      inputs.forEach((input) => {
+        const result = validateFn(input);
+        expect(result.isValid).toBe(false);
+      });
+    });
   });
 }
