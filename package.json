@@ -146,7 +146,7 @@
   "devDependencies": {
     "@noble/hashes": "^2.0.1",
     "@types/node": "^25.5.0",
-    "@typescript/native-preview": "7.0.0-dev.20260328.1",
+    "@typescript/native-preview": "7.0.0-dev.20260403.1",
     "bumpp": "^11.0.1",
     "typescript": "^5.9.3",
     "vite-plus": "^0.1.15"
