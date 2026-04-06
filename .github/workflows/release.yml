@@ -38,19 +38,19 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
           persist-credentials: false
 
       - name: Setup Vite+
-        uses: voidzero-dev/setup-vp@v1
+        uses: voidzero-dev/setup-vp@8ecb39174989ce55af90f45cf55b02738599831d # v1
         with:
           node-version: "lts"
           cache: true
 
       - name: Setup Node.js for npm
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "24"
           registry-url: "https://registry.npmjs.org"
@@ -128,19 +128,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout merged master
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: master
           fetch-depth: 0
 
       - name: Setup Vite+
-        uses: voidzero-dev/setup-vp@v1
+        uses: voidzero-dev/setup-vp@8ecb39174989ce55af90f45cf55b02738599831d # v1
         with:
           node-version: "lts"
           cache: true
 
       - name: Setup Node.js for npm
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "24"
           registry-url: "https://registry.npmjs.org"
