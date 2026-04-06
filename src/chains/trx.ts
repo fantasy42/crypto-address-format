@@ -2,7 +2,7 @@ import type {ValidationResult} from '../types';
 
 import {base58Check} from '../utils/base58Check';
 import {base58Btc} from '../utils/base58';
-import {createFailure, createSuccess} from '../utils/validationResult';
+import {createValidator} from '../utils/createValidator';
 
 /**
  * Supported Tron address categories returned by `validateTRX()`.
@@ -27,30 +27,28 @@ export type TronValidationResult = ValidationResult<TronAddressType>;
  * @param address - The TRON address to validate.
  * @returns A `ValidationResult` indicating whether the address is valid.
  */
-export function validateTRX(address: string): TronValidationResult {
-  if (!address || typeof address !== 'string') {
-    return createFailure('Address must be a non-empty string');
+export const validateTRX = createValidator<TronValidationResult>(
+  (address, {failure, success}) => {
+    if (!address.startsWith('T')) {
+      return failure('Invalid TRON address prefix');
+    }
+
+    if (address.length !== 34) {
+      return failure('Invalid TRON address length');
+    }
+
+    const result = base58Check(address, {
+      codec: base58Btc,
+      expectedVersion: 0x41,
+    });
+
+    if (!result.isValid) {
+      return failure(result.error);
+    }
+
+    return success('TRON', address);
   }
-
-  if (!address.startsWith('T')) {
-    return createFailure('Invalid TRON address prefix');
-  }
-
-  if (address.length !== 34) {
-    return createFailure('Invalid TRON address length');
-  }
-
-  const result = base58Check(address, {
-    codec: base58Btc,
-    expectedVersion: 0x41,
-  });
-
-  if (!result.isValid) {
-    return createFailure(result.error);
-  }
-
-  return createSuccess('TRON', address);
-}
+);
 
 /**
  * Validates a TRC-20 token address (such as USDT) on the TRON network.

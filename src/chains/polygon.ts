@@ -1,6 +1,7 @@
 import type {ValidationResult} from '../types';
 
-import {validateEVMAddress} from '../utils/evm';
+import {createValidator} from '../utils/createValidator';
+import {getEVMLogic} from '../utils/evm';
 
 /**
  * Supported Polygon address categories returned by `validatePolygon()`.
@@ -25,9 +26,9 @@ export type PolygonValidationResult = ValidationResult<PolygonAddressType>;
  * @param address - The Polygon address to validate.
  * @returns A `ValidationResult` indicating whether the address is valid.
  */
-export function validatePolygon(address: string): PolygonValidationResult {
-  return validateEVMAddress(address, 'Polygon');
-}
+export const validatePolygon = createValidator<PolygonValidationResult>(
+  getEVMLogic('Polygon')
+);
 
 /**
  * Validates a MATIC token address on the Polygon network.

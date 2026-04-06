@@ -1,6 +1,7 @@
 import type {ValidationResult} from '../types';
 
-import {validateEVMAddress} from '../utils/evm';
+import {createValidator} from '../utils/createValidator';
+import {getEVMLogic} from '../utils/evm';
 
 /**
  * Supported Ethereum address categories returned by `validateETH()`.
@@ -25,9 +26,9 @@ export type ETHValidationResult = ValidationResult<EthereumAddressType>;
  * @param address - The Ethereum address to validate.
  * @returns A `ValidationResult` indicating whether the address is valid.
  */
-export function validateETH(address: string): ETHValidationResult {
-  return validateEVMAddress(address, 'Ethereum');
-}
+export const validateETH = createValidator<ETHValidationResult>(
+  getEVMLogic('Ethereum')
+);
 
 /**
  * Validates an ERC-20 token address (such as USDT or USDC) on the Ethereum network.

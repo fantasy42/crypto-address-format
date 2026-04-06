@@ -1,6 +1,7 @@
 import type {ValidationResult} from '../types';
 
-import {validateEVMAddress} from '../utils/evm';
+import {createValidator} from '../utils/createValidator';
+import {getEVMLogic} from '../utils/evm';
 
 /**
  * Supported BNB address categories returned by `validateBNB()`.
@@ -25,9 +26,9 @@ export type BNBValidationResult = ValidationResult<BNBAddressType>;
  * @param address - The BNB address to validate.
  * @returns A `ValidationResult` indicating whether the address is valid.
  */
-export function validateBNB(address: string): BNBValidationResult {
-  return validateEVMAddress(address, 'BNB');
-}
+export const validateBNB = createValidator<BNBValidationResult>(
+  getEVMLogic('BNB')
+);
 
 /**
  * Validates a BEP-20 token address (such as USDT or BUSD) on the BNB Smart Chain.
