@@ -145,7 +145,7 @@
   },
   "devDependencies": {
     "@noble/hashes": "2.0.1",
-    "@types/node": "25.5.0",
+    "@types/node": "25.5.2",
     "@typescript/native-preview": "7.0.0-dev.20260403.1",
     "bumpp": "11.0.1",
     "typescript": "5.9.3",
