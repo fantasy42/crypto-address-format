@@ -1,4 +1,4 @@
-# crypto-address-format
+# crypto-address-format &middot; [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/fantasy42/crypto-address-format/blob/master/LICENSE) [![npm version](https://img.shields.io/npm/v/crypto-address-format.svg?style=flat)](https://www.npmjs.com/package/crypto-address-format) [![tests](https://github.com/fantasy42/crypto-address-format/actions/workflows/test.yml/badge.svg)](https://github.com/fantasy42/crypto-address-format/actions/workflows/test.yml) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/fantasy42/crypto-address-format/blob/master/.github/CONTRIBUTING.md)
 
 Universal, lightweight format validation for cryptocurrency addresses.
 
