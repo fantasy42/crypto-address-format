@@ -167,17 +167,20 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Create and push tag
+        id: create_tag
         shell: bash
         run: |
           if git rev-parse "${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
-            echo "Tag already exists: ${{ steps.version.outputs.tag }}"
-            exit 0
+            echo "Tag already exists: ${{ steps.version.outputs.tag }}, skipping publish and release."
+            echo "created=false" >> "$GITHUB_OUTPUT"
+          else
+            git tag "${{ steps.version.outputs.tag }}"
+            git push origin "${{ steps.version.outputs.tag }}"
+            echo "created=true" >> "$GITHUB_OUTPUT"
           fi
 
-          git tag "${{ steps.version.outputs.tag }}"
-          git push origin "${{ steps.version.outputs.tag }}"
-
       - name: Ensure npm token is configured
+        if: steps.create_tag.outputs.created == 'true'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         shell: bash
@@ -188,11 +191,22 @@ jobs:
           fi
 
       - name: Publish to npm
+        if: steps.create_tag.outputs.created == 'true'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: vp pm publish --no-git-checks --access public -- --provenance
 
-      - name: Create GitHub release
+      - name: Generate release notes with git-cliff
+        if: steps.create_tag.outputs.created == 'true'
+        uses: orhun/git-cliff-action@c93ef52f3d0ddcdcc9bd5447d98d458a11cd4f72 # v4.7.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release create "${{ steps.version.outputs.tag }}" --generate-notes
+        with:
+          config: cliff.toml
+          args: --latest --strip all --output RELEASE_NOTES.md
+
+      - name: Create GitHub release
+        if: steps.create_tag.outputs.created == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create "${{ steps.version.outputs.tag }}" --notes-file RELEASE_NOTES.md
