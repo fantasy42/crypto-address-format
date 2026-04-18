@@ -148,7 +148,7 @@
     "@types/node": "25.6.0",
     "bumpp": "11.0.1",
     "typescript": "6.0.2",
-    "vite-plus": "0.1.16"
+    "vite-plus": "0.1.17"
   },
   "peerDependencies": {
     "@noble/hashes": "^2.0.1"
