@@ -4,10 +4,16 @@
   "description": "Universal format validation for crypto wallet addresses.",
   "keywords": [
     "address-validator",
+    "base58",
+    "bech32",
     "bitcoin",
     "blockchain",
+    "bnb",
     "crypto",
+    "eip55",
     "ethereum",
+    "ton",
+    "tron",
     "wallet"
   ],
   "homepage": "https://github.com/fantasy42/crypto-address-format#readme",
