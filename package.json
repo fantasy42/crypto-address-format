@@ -79,6 +79,16 @@
         "types": "./dist/polygon.d.cts"
       }
     },
+    "./ton": {
+      "import": {
+        "default": "./dist/ton.mjs",
+        "types": "./dist/ton.d.mts"
+      },
+      "require": {
+        "default": "./dist/ton.cjs",
+        "types": "./dist/ton.d.cts"
+      }
+    },
     "./trx": {
       "import": {
         "default": "./dist/trx.mjs",
