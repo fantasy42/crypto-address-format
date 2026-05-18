@@ -163,7 +163,7 @@
   "peerDependencies": {
     "@noble/hashes": "^2.0.1"
   },
-  "packageManager": "pnpm@11.0.4",
+  "packageManager": "pnpm@11.1.2",
   "pnpm": {
     "overrides": {
       "vite": "npm:@voidzero-dev/vite-plus-core@latest",
