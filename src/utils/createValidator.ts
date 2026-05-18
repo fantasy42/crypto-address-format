@@ -1,10 +1,20 @@
 import type {ValidationResult} from '../types';
 
+/**
+ * Helper methods for building a `ValidationResult` inside a validator.
+ */
 export interface ValidationContext {
   success: <T extends string>(type: T, address: string) => ValidationResult<T>;
   failure: (message: string) => ValidationResult<never>;
 }
 
+/**
+ * Wraps a validation function with common input checks and error handling.
+ *
+ * @param validate - A validation callback that receives the cleaned address
+ *                   and a {@link ValidationContext}.
+ * @returns A type‑safe address validator that never throws.
+ */
 export function createValidator<R extends ValidationResult>(
   validate: (address: string, context: ValidationContext) => R
 ): (address: string) => R {

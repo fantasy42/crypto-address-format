@@ -6,6 +6,9 @@ import {keccak_256} from '@noble/hashes/sha3.js';
 // Pre-instantiate to avoid GC pressure during high-frequency validation
 const encoder = new TextEncoder();
 
+/**
+ * Returns an EIP‑55 checksum validation callback for EVM addresses.
+ */
 export const getEVMLogic =
   <T extends string>(label: T) =>
   (
