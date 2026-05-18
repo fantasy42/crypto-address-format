@@ -63,6 +63,10 @@ Validates BNB Smart Chain (**BSC**) addresses using EVM-compatible EIP-55 checks
 
 Alias for `validateBNB`. Specifically validates BSC-based **USDT** (BEP-20) destination addresses.
 
+`validateTON(address)`
+
+Validates TON (The Open Network) addresses, supporting both **Raw** (workchain:hex) and **User‑Friendly** (base64/base64url) formats across mainnet and testnet, with full CRC16 checksum verification.
+
 `validateXRP(address)`
 
 Validates XRP Ledger addresses, supporting both **Classic (r-prefix)** and **Mainnet X-Addresses** using double-SHA256 checksums.
