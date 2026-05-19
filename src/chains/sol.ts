@@ -1,6 +1,6 @@
 import type {ValidationResult} from '../types';
 
-import {base58Btc} from '../utils/base58';
+import {base58} from '../utils/base58';
 import {createValidator} from '../utils/createValidator';
 
 /**
@@ -43,7 +43,7 @@ export const validateSOL = createValidator<SOLValidationResult>(
 
     let decoded: Uint8Array;
     try {
-      decoded = base58Btc.decode(address);
+      decoded = base58.decode(address);
     } catch {
       return context.failure('Invalid Base58 encoding');
     }

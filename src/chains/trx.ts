@@ -1,7 +1,7 @@
 import type {ValidationResult} from '../types';
 
+import {base58} from '../utils/base58';
 import {base58Check} from '../utils/base58Check';
-import {base58Btc} from '../utils/base58';
 import {createValidator} from '../utils/createValidator';
 
 /**
@@ -38,7 +38,7 @@ export const validateTRX = createValidator<TronValidationResult>(
     }
 
     const result = base58Check(address, {
-      codec: base58Btc,
+      codec: base58,
       expectedVersion: 0x41,
     });
 

@@ -2,8 +2,8 @@ import type {ValidationResult} from '../types';
 import type {ValidationContext} from '../utils/createValidator';
 
 import {bech32, bech32m, fromWordsUnsafe} from '../utils/bech32';
+import {base58} from '../utils/base58';
 import {base58Check} from '../utils/base58Check';
-import {base58Btc} from '../utils/base58';
 import {createValidator} from '../utils/createValidator';
 
 /**
@@ -116,7 +116,7 @@ function validateBase58(
   {success, failure}: ValidationContext
 ) {
   const result = base58Check(address, {
-    codec: base58Btc,
+    codec: base58,
   });
 
   if (!result.isValid) {

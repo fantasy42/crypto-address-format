@@ -2,7 +2,7 @@ import {describe, it, expect} from 'vite-plus/test';
 import {sha256} from '@noble/hashes/sha2.js';
 
 import {base58Check} from './base58Check';
-import {base58Btc, base58Xrp} from './base58';
+import {base58, base58Xrp} from './base58';
 import {createBaseCodec} from './baseCodec';
 
 function encodeBase58Check(
@@ -28,9 +28,9 @@ describe('base58Check', () => {
       const versioned = new Uint8Array(21);
       versioned[0] = version;
       versioned.set(samplePayload, 1);
-      const addr = encodeBase58Check(base58Btc, versioned);
+      const addr = encodeBase58Check(base58, versioned);
 
-      const result = base58Check(addr, {codec: base58Btc});
+      const result = base58Check(addr, {codec: base58});
       expect(result.isValid).toBe(true);
       if (result.isValid) {
         expect(result.version).toBe(version);
@@ -43,10 +43,10 @@ describe('base58Check', () => {
       const versioned = new Uint8Array(21);
       versioned[0] = version;
       versioned.set(samplePayload, 1);
-      const addr = encodeBase58Check(base58Btc, versioned);
+      const addr = encodeBase58Check(base58, versioned);
 
       const result = base58Check(addr, {
-        codec: base58Btc,
+        codec: base58,
         expectedVersion: 0x41,
       });
       expect(result.isValid).toBe(true);
@@ -80,9 +80,9 @@ describe('base58Check', () => {
       const versioned = new Uint8Array(21);
       versioned[0] = version;
       versioned.set(samplePayload, 1);
-      const addr = encodeBase58Check(base58Btc, versioned);
+      const addr = encodeBase58Check(base58, versioned);
 
-      const result = base58Check(addr, {codec: base58Btc});
+      const result = base58Check(addr, {codec: base58});
       expect(result.isValid).toBe(true);
       if (result.isValid) {
         expect(result.version).toBe(version);
@@ -95,11 +95,11 @@ describe('base58Check', () => {
       const versioned = new Uint8Array(21);
       versioned[0] = 0x00;
       versioned.set(samplePayload, 1);
-      const addr = encodeBase58Check(base58Btc, versioned);
+      const addr = encodeBase58Check(base58, versioned);
       const corrupted =
         addr.slice(0, -1) + (addr.slice(-1) === '1' ? '2' : '1');
 
-      const result = base58Check(corrupted, {codec: base58Btc});
+      const result = base58Check(corrupted, {codec: base58});
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
         expect(result.error).toContain('Checksum mismatch');
@@ -110,10 +110,10 @@ describe('base58Check', () => {
       const versioned = new Uint8Array(21);
       versioned[0] = 0x41;
       versioned.set(samplePayload, 1);
-      const addr = encodeBase58Check(base58Btc, versioned);
+      const addr = encodeBase58Check(base58, versioned);
 
       const result = base58Check(addr, {
-        codec: base58Btc,
+        codec: base58,
         expectedVersion: 0x00,
       });
       expect(result.isValid).toBe(false);
@@ -123,7 +123,7 @@ describe('base58Check', () => {
     });
 
     it('fails on invalid Base58 characters', () => {
-      const result = base58Check('0OIl', {codec: base58Btc});
+      const result = base58Check('0OIl', {codec: base58});
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
         expect(result.error).toContain('Invalid Base58 encoding');
@@ -132,9 +132,9 @@ describe('base58Check', () => {
 
     it('fails when decoded data is too short (only checksum)', () => {
       const checksum = sha256(sha256(new Uint8Array(0))).subarray(0, 4);
-      const addr = base58Btc.encode(checksum);
+      const addr = base58.encode(checksum);
 
-      const result = base58Check(addr, {codec: base58Btc});
+      const result = base58Check(addr, {codec: base58});
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
         expect(result.error).toContain('Payload too short');
@@ -145,8 +145,8 @@ describe('base58Check', () => {
   describe('edge cases', () => {
     it('works with a payload of minimal size (just version, no extra payload)', () => {
       const versioned = new Uint8Array([0x00]);
-      const addr = encodeBase58Check(base58Btc, versioned);
-      const result = base58Check(addr, {codec: base58Btc});
+      const addr = encodeBase58Check(base58, versioned);
+      const result = base58Check(addr, {codec: base58});
       expect(result.isValid).toBe(true);
       if (result.isValid) {
         expect(result.version).toBe(0x00);
@@ -156,8 +156,8 @@ describe('base58Check', () => {
 
     it('handles leading zeros in the Base58 string correctly', () => {
       const versioned = new Uint8Array([0x00, 0x00, 0x01]);
-      const addr = encodeBase58Check(base58Btc, versioned);
-      const result = base58Check(addr, {codec: base58Btc});
+      const addr = encodeBase58Check(base58, versioned);
+      const result = base58Check(addr, {codec: base58});
       expect(result.isValid).toBe(true);
       if (result.isValid) {
         expect(result.version).toBe(0x00);
@@ -176,9 +176,9 @@ describe('base58Check', () => {
       expect(result1.isValid).toBe(true);
 
       const singleVersioned = new Uint8Array([0x00, ...samplePayload]);
-      const singleAddr = encodeBase58Check(base58Btc, singleVersioned);
+      const singleAddr = encodeBase58Check(base58, singleVersioned);
       const result2 = base58Check(singleAddr, {
-        codec: base58Btc,
+        codec: base58,
         expectedVersion: 0x00,
       });
       expect(result2.isValid).toBe(true);

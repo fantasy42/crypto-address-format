@@ -24,7 +24,7 @@ type Base58CheckResult =
 /**
  * Options for {@link base58Check}.
  *
- * @property codec - The Base‑encoding codec to use (e.g. `base58Btc`).
+ * @property codec - The Base‑encoding codec to use (e.g. `base58`).
  * @property expectedVersion - Optional single version byte or an array of
  * version bytes that the decoded data must start with. If omitted, no
  * version check is performed but the first byte is still returned as
