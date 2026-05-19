@@ -75,6 +75,16 @@
         "types": "./dist/eth.d.cts"
       }
     },
+    "./ltc": {
+      "import": {
+        "default": "./dist/ltc.mjs",
+        "types": "./dist/ltc.d.mts"
+      },
+      "require": {
+        "default": "./dist/ltc.cjs",
+        "types": "./dist/ltc.d.cts"
+      }
+    },
     "./polygon": {
       "import": {
         "default": "./dist/polygon.mjs",
