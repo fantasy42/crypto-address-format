@@ -1,7 +1,7 @@
 import type {ValidationResult} from '../types';
 import type {ValidationContext} from '../utils/createValidator';
 
-import {bech32, bech32m} from '../utils/bech32';
+import {bech32, bech32m, fromWordsUnsafe} from '../utils/bech32';
 import {base58Check} from '../utils/base58Check';
 import {base58Btc} from '../utils/base58';
 import {createValidator} from '../utils/createValidator';
@@ -34,12 +34,10 @@ export const validateBTC = createValidator<BTCValidationResult>(
   (address, context): BTCValidationResult => {
     const lowerAddr = address.toLowerCase();
 
-    // 1. SegWit / Taproot (Bech32/Bech32m)
     if (lowerAddr.startsWith('bc1')) {
       return validateBech32(address, lowerAddr, context);
     }
 
-    // 2. Legacy / Nested SegWit (Base58)
     if (address.startsWith('1') || address.startsWith('3')) {
       return validateBase58(address, context);
     }
@@ -53,7 +51,6 @@ function validateBech32(
   lower: string,
   {success, failure}: ValidationContext
 ) {
-  // Bech32 addresses cannot be mixed case (BIP173 Requirement)
   if (original !== lower && original !== original.toUpperCase()) {
     return failure('Mixed case is invalid for Bech32');
   }
@@ -61,25 +58,54 @@ function validateBech32(
   let decoded;
   let isBech32m = false;
 
-  // We attempt Bech32 first. If it fails, we try Bech32m.
-  // This handles the distinct checksum constants required by BIP350.
+  // Try Bech32 (v0), fall back to Bech32m (v1+)
   try {
     decoded = bech32.decode(lower, 1023);
   } catch {
-    decoded = bech32m.decode(lower, 1023);
-    isBech32m = true;
+    try {
+      decoded = bech32m.decode(lower, 1023);
+      isBech32m = true;
+    } catch {
+      return failure('Invalid Bech32/Bech32m checksum or encoding');
+    }
+  }
+
+  if (decoded.prefix !== 'bc') {
+    return failure('Invalid human-readable part (HRP) for Bitcoin');
+  }
+
+  if (decoded.words.length === 0) {
+    return failure('Missing witness version byte');
   }
 
   const witnessVersion = decoded.words[0];
 
-  // BIP173: Witness version 0 MUST use Bech32
+  if (witnessVersion > 16) {
+    return failure('Invalid witness version (must be 0-16)');
+  }
+
   if (witnessVersion === 0 && isBech32m) {
     return failure('Version 0 must use Bech32 encoding');
   }
 
-  // BIP350: Witness version 1+ MUST use Bech32m
   if (witnessVersion >= 1 && !isBech32m) {
     return failure('Version 1+ must use Bech32m encoding');
+  }
+
+  const programWords = decoded.words.slice(1);
+  const programBytes = fromWordsUnsafe(programWords);
+  if (!programBytes) {
+    return failure('Invalid witness program padding (non-zero padding bits)');
+  }
+
+  if (
+    witnessVersion === 0 &&
+    programBytes.length !== 20 &&
+    programBytes.length !== 32
+  ) {
+    return failure(
+      'Invalid witness program length for version 0 (must be 20 or 32 bytes)'
+    );
   }
 
   return success(witnessVersion === 0 ? 'Bech32' : 'Bech32m', lower);
@@ -97,11 +123,18 @@ function validateBase58(
     return failure(result.error);
   }
 
+  // Mainnet version bytes: P2PKH=0x00 (1...), P2SH=0x05 (3...)
   const isP2PKH = result.version === 0x00;
   const isP2SH = result.version === 0x05;
 
   if (!isP2PKH && !isP2SH) {
     return failure('Unsupported Bitcoin address version');
+  }
+
+  if (result.payload.length !== 20) {
+    return failure(
+      'Invalid public key hash or script hash length (must be 20 bytes)'
+    );
   }
 
   return success(isP2PKH ? 'P2PKH' : 'P2SH', address);
