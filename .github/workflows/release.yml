@@ -27,14 +27,13 @@ permissions:
   pull-requests: write
   id-token: write
 
-concurrency:
-  group: release-${{ github.ref }}
-  cancel-in-progress: false
-
 jobs:
   open-release-pr:
     if: github.event_name == 'workflow_dispatch' && github.ref_name == 'master'
     runs-on: ubuntu-latest
+    concurrency:
+      group: release-open-${{ github.ref }}
+      cancel-in-progress: false
 
     steps:
       - name: Checkout repository
@@ -105,6 +104,12 @@ jobs:
         run: |
           branch="release/v${{ steps.version.outputs.version }}"
           git remote set-url origin "https://x-access-token:${RELEASE_PAT}@github.com/${{ github.repository }}.git"
+
+          if git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
+            echo "Branch $branch already exists. Please delete it or choose a different version."
+            exit 1
+          fi
+
           git switch -c "$branch"
           git push --set-upstream origin "$branch"
           echo "branch=$branch" >> "$GITHUB_OUTPUT"
@@ -126,6 +131,10 @@ jobs:
       github.event.pull_request.base.ref == 'master' &&
       startsWith(github.event.pull_request.head.ref, 'release/')
     runs-on: ubuntu-latest
+    concurrency:
+      group: release-publish-${{ github.ref }}
+      cancel-in-progress: false
+
     steps:
       - name: Checkout merged master
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -160,11 +169,32 @@ jobs:
         run: |
           version=$(node -e "console.log(JSON.parse(require('node:fs').readFileSync('package.json', 'utf8')).version)")
           echo "tag=v$version" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Validate version matches release branch
+        shell: bash
+        run: |
+          expected_branch="release/v${{ steps.version.outputs.version }}"
+          actual_branch="${{ github.event.pull_request.head.ref }}"
+          if [[ "$expected_branch" != "$actual_branch" ]]; then
+            echo "Version mismatch: package.json has v${{ steps.version.outputs.version }}, but PR branch is $actual_branch"
+            exit 1
+          fi
 
       - name: Configure Git user
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Ensure npm token is configured
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        shell: bash
+        run: |
+          if [ -z "$NODE_AUTH_TOKEN" ]; then
+            echo "Missing NPM_TOKEN secret. Add an npm automation token in GitHub Actions secrets."
+            exit 1
+          fi
 
       - name: Create and push tag
         id: create_tag
@@ -177,17 +207,6 @@ jobs:
             git tag "${{ steps.version.outputs.tag }}"
             git push origin "${{ steps.version.outputs.tag }}"
             echo "created=true" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Ensure npm token is configured
-        if: steps.create_tag.outputs.created == 'true'
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        shell: bash
-        run: |
-          if [ -z "$NODE_AUTH_TOKEN" ]; then
-            echo "Missing NPM_TOKEN secret. Add an npm automation token in GitHub Actions secrets."
-            exit 1
           fi
 
       - name: Publish to npm
@@ -209,4 +228,4 @@ jobs:
         if: steps.create_tag.outputs.created == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release create "${{ steps.version.outputs.tag }}" --notes-file RELEASE_NOTES.md
+        run: gh release create "${{ steps.version.outputs.tag }}" --title "Release ${{ steps.version.outputs.tag }}" --notes-file RELEASE_NOTES.md
