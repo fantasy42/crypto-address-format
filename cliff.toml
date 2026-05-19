@@ -8,31 +8,49 @@ repo = "crypto-address-format"
 [changelog]
 header = ""
 body = """
-{% if version %}\
-## What's Changed
-{% else %}\
+{% if version -%}
+## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}
+{% else -%}
 ## Unreleased
-{% endif %}\
-{% for group, commits in commits | group_by(attribute="group") %}\
-### {{ group | striptags | trim | upper_first }}
+{% endif -%}
 
-{% for commit in commits %}\
-- {% if commit.scope %}**{{ commit.scope }}**: {% endif %}\
-{{ commit.message | upper_first }}\
-{% if commit.github.username %} by @{{ commit.github.username }}{% endif %}\
-{% if commit.github.pr_number %} in [#{{ commit.github.pr_number }}]({{ commit.github.pr_url }}){% endif %}
+{% set remote_url = "https://github.com/" ~ remote.github.owner ~ "/" ~ remote.github.repo -%}
 
-{% endfor %}\
-{% endfor %}\
-{% if github.contributors | filter(attribute="is_first_time", value=true) | length != 0 %}\
-## New Contributors
+{% set group_order = [
+  "🚀 Features",
+  "🐛 Bug Fixes",
+  "⚡ Performance",
+  "🔨 Refactor",
+  "🧪 Testing",
+  "📚 Documentation",
+  "🎨 Styling",
+  "⚙️ Miscellaneous",
+  "📦 Dependencies",
+  "📝 Other Changes"
+] -%}
 
-{% for contributor in github.contributors | filter(attribute="is_first_time", value=true) %}\
-- @{{ contributor.username }} made their first contribution\
-{% if contributor.pr_number %} in [#{{ contributor.pr_number }}]({{ contributor.pr_url }}){% endif %}
+{% for desired_group in group_order -%}
+  {% set_global group_commits = [] -%}
+  {% for commit in commits -%}
+    {% if commit.group == desired_group -%}
+      {% set_global group_commits = group_commits | concat(with=[commit]) -%}
+    {% endif -%}
+  {% endfor -%}
+  {% if group_commits | length > 0 -%}
+### {{ desired_group }}
+{% for commit in group_commits -%}
+- {% if commit.scope %}*({{ commit.scope }})* {% endif -%}{{ commit.message | upper_first }} - ([{{ commit.id | truncate(length=7, end="") }}]({{ remote_url }}/commit/{{ commit.id }})){% if commit.remote.pr_number %} ([#{{ commit.remote.pr_number }}]({{ remote_url }}/pull/{{ commit.remote.pr_number }})){% endif %}
+{% endfor %}
 
-{% endfor %}\
-{% endif %}\
+  {% endif -%}
+{% endfor -%}
+
+{% if github.contributors | filter(attribute="is_first_time", value=true) | length != 0 -%}
+  ## New Contributors
+{% for contributor in github.contributors | filter(attribute="is_first_time", value=true) -%}
+- @{{ contributor.username }} made their first contribution{% if contributor.pr_number %} in [#{{ contributor.pr_number }}]({{ remote_url }}/pull/{{ contributor.pr_number }}){% endif %}
+{% endfor %}
+{% endif %}
 """
 trim = true
 footer = ""
@@ -43,12 +61,12 @@ filter_unconventional = false
 split_commits = false
 
 commit_preprocessors = [
-  # Strip trailing whitespace
+  { pattern = '\nCo-authored-by:.*', replace = "", replace_all = true },
+  { pattern = '\s*\(#\d+\)', replace = "", replace_all = true },
   { pattern = '\s+$', replace = "" },
 ]
 
 commit_parsers = [
-  # Conventional Commits types
   { message = "^feat", group = "🚀 Features" },
   { message = "^fix", group = "🐛 Bug Fixes" },
   { message = "^perf", group = "⚡ Performance" },
@@ -56,33 +74,17 @@ commit_parsers = [
   { message = "^docs", group = "📚 Documentation" },
   { message = "^style", group = "🎨 Styling" },
   { message = "^test", group = "🧪 Testing" },
-  # Renovate bot: chore(deps) conventional style (if configured)
-  { message = "^chore\\(deps\\)|^chore\\(deps-dev\\)", group = "📦 Dependencies" },
-  # Renovate bot: plain English style
-  { message = "^(Update|Pin) dependenc", group = "📦 Dependencies" },
-  { message = "^Lock file", group = "📦 Dependencies" },
-  { message = "^(Configure|Add) [Rr]enovate", group = "📦 Dependencies" },
-  # Skip automated version bump commits from the release workflow
+  { message = "^chore\\(deps\\)", group = "📦 Dependencies" },
   { message = "^Bump version to", skip = true },
-  # Skip GitHub merge commits
   { message = "^Merge (pull request|branch)", skip = true },
-  # Everything else: chore, ci, build, plain commits
   { message = "^(chore|ci|build)", group = "⚙️ Miscellaneous" },
-  # Catch-all for non-conventional commits
   { message = ".*", group = "📝 Other Changes" },
 ]
-# Prevent commits that are breaking from being excluded by commit parsers.
+
 protect_breaking_commits = false
-# Don't exclude commits that are not matched by any commit parser.
 filter_commits = false
-# Regex to select git tags that represent releases.
 tag_pattern = "v[0-9].*"
-# Regex to select git tags that do not represent proper releases.
 skip_tags = ""
-# Regex to exclude git tags after applying the tag_pattern.
 ignore_tags = ""
-# Order releases topologically instead of chronologically.
 topo_order = false
-# Order of commits in each group/release within the changelog.
-# Allowed values: newest, oldest
 sort_commits = "newest"
