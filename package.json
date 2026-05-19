@@ -95,6 +95,16 @@
         "types": "./dist/polygon.d.cts"
       }
     },
+    "./sol": {
+      "import": {
+        "default": "./dist/sol.mjs",
+        "types": "./dist/sol.d.mts"
+      },
+      "require": {
+        "default": "./dist/sol.cjs",
+        "types": "./dist/sol.d.cts"
+      }
+    },
     "./ton": {
       "import": {
         "default": "./dist/ton.mjs",
