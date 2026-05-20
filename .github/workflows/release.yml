@@ -48,12 +48,6 @@ jobs:
           node-version: "lts"
           cache: true
 
-      - name: Setup Node.js for npm
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
-        with:
-          node-version: "24"
-          registry-url: "https://registry.npmjs.org"
-
       - name: Install dependencies
         run: vp install
 
@@ -148,12 +142,6 @@ jobs:
           node-version: "lts"
           cache: true
 
-      - name: Setup Node.js for npm
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
-        with:
-          node-version: "24"
-          registry-url: "https://registry.npmjs.org"
-
       - name: Install dependencies
         run: vp install
 
@@ -186,16 +174,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Ensure npm token is configured
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        shell: bash
-        run: |
-          if [ -z "$NODE_AUTH_TOKEN" ]; then
-            echo "Missing NPM_TOKEN secret. Add an npm automation token in GitHub Actions secrets."
-            exit 1
-          fi
-
       - name: Create and push tag
         id: create_tag
         shell: bash
@@ -211,8 +189,6 @@ jobs:
 
       - name: Publish to npm
         if: steps.create_tag.outputs.created == 'true'
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: vp pm publish --no-git-checks --access public -- --provenance
 
       - name: Generate release notes with git-cliff
