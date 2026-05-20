@@ -1,6 +1,6 @@
 import {describe, it, expect} from 'vite-plus/test';
 
-import {base58, base58Xrp} from './base58';
+import {base58, base58Xrp} from '../base58';
 
 describe('base58 codec instances', () => {
   describe('base58', () => {

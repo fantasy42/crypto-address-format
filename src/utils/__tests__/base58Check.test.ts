@@ -1,9 +1,9 @@
 import {describe, it, expect} from 'vite-plus/test';
 import {sha256} from '@noble/hashes/sha2.js';
 
-import {base58Check} from './base58Check';
-import {base58, base58Xrp} from './base58';
-import {createBaseCodec} from './baseCodec';
+import {base58Check} from '../base58Check';
+import {base58, base58Xrp} from '../base58';
+import {createBaseCodec} from '../baseCodec';
 
 function encodeBase58Check(
   codec: ReturnType<typeof createBaseCodec>,

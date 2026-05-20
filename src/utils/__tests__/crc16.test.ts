@@ -1,6 +1,6 @@
 import {describe, it, expect} from 'vite-plus/test';
 
-import {crc16Ton, crc16xmodem} from './crc16';
+import {crc16Ton, crc16xmodem} from '../crc16';
 
 describe('crc16Ton', () => {
   it('returns zero checksum for empty input', () => {

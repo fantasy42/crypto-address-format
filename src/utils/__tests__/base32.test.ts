@@ -1,6 +1,6 @@
 import {describe, it, expect} from 'vite-plus/test';
 
-import {encode, decode} from './base32';
+import {encode, decode} from '../base32';
 
 describe('base32 (RFC 4648)', () => {
   describe('valid vectors', () => {

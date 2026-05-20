@@ -1,6 +1,6 @@
 import {describe, it, expect} from 'vite-plus/test';
 
-import {compareBytes} from './compareBytes';
+import {compareBytes} from '../compareBytes';
 
 describe('compareBytes', () => {
   it('returns true for identical arrays', () => {

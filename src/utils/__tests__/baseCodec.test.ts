@@ -1,7 +1,7 @@
 import {describe, it, expect} from 'vite-plus/test';
 
-import {createBaseCodec} from './baseCodec';
-import {BTC_ALPHABET} from './alphabets';
+import {createBaseCodec} from '../baseCodec';
+import {BTC_ALPHABET} from '../alphabets';
 
 const codec = createBaseCodec(BTC_ALPHABET);
 
