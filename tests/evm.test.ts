@@ -11,26 +11,29 @@ const evmChains = [
   {validate: validatePolygon, label: 'Polygon'},
 ];
 
-describe('EVM Implementations (Smoke Tests)', () => {
-  evmChains.forEach(({validate, label}) => {
-    describe(`Binding test for ${label}`, () => {
-      runBaseValidatorTests(validate);
+describe.each(evmChains)(
+  '$label validator (smoke tests)',
+  ({validate, label}) => {
+    runBaseValidatorTests(validate);
 
-      it('correctly maps to label and passes basic check', () => {
-        // Standard EIP-55 valid address
-        const validAddr = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045';
-        const result = validate(validAddr);
-
-        expect(result.isValid).toBe(true);
-        if (result.isValid) {
-          expect(result.type).toBe(label);
-          expect(result.address).toBe(validAddr.toLowerCase());
-        }
-      });
-
-      it('fails on completely invalid input', () => {
-        expect(validate('not-an-evm-address').isValid).toBe(false);
-      });
+    it('returns correct label and normalized address for a valid EIP-55 address', () => {
+      const validAddr = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045';
+      const result = validate(validAddr);
+      expect(result.isValid).toBe(true);
+      if (result.isValid) {
+        expect(result.type).toBe(label);
+        expect(result.address).toBe(validAddr.toLowerCase());
+      }
     });
-  });
-});
+
+    it('fails with label in error message when checksum is broken', () => {
+      const brokenChecksum = '0xd8dA6bF26964aF9D7eEd9e03E53415D37aA96045';
+      const result = validate(brokenChecksum);
+      expect(result.isValid).toBe(false);
+      if (!result.isValid) {
+        expect(result.error).toContain(label);
+        expect(result.error).toContain('checksum');
+      }
+    });
+  }
+);

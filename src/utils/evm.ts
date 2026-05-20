@@ -3,7 +3,8 @@ import type {ValidationResult} from '../types';
 
 import {keccak_256} from '@noble/hashes/sha3.js';
 
-// Pre-instantiate to avoid GC pressure during high-frequency validation
+const HEX_REGEX = /^[0-9a-fA-F]{40}$/;
+
 const encoder = new TextEncoder();
 
 /**
@@ -15,39 +16,38 @@ export const getEVMLogic =
     address: string,
     {success, failure}: ValidationContext
   ): ValidationResult<T> => {
-    const hasCorrectPrefix =
-      address.startsWith('0x') || address.startsWith('0X');
-    if (address.length !== 42 || !hasCorrectPrefix) {
-      return failure(`Invalid ${label} address length or prefix`);
+    if (address.length !== 42) {
+      return failure(`Invalid ${label} address length`);
+    }
+    if (address[0] !== '0' || (address[1] !== 'x' && address[1] !== 'X')) {
+      return failure(`Invalid ${label} address prefix (must start with 0x)`);
     }
 
     const hexPart = address.slice(2);
-    if (!/^[0-9a-fA-F]{40}$/.test(hexPart)) {
+    if (!HEX_REGEX.test(hexPart)) {
       return failure('Invalid hexadecimal characters');
     }
 
     const isLowercase = hexPart === hexPart.toLowerCase();
     const isUppercase = hexPart === hexPart.toUpperCase();
 
-    // If mixed case, validate EIP-55 checksum
     if (!isLowercase && !isUppercase) {
-      const lowercaseAddr = hexPart.toLowerCase();
-      const hash = keccak_256(encoder.encode(lowercaseAddr));
+      const lowerHex = hexPart.toLowerCase();
+      const hash = keccak_256(encoder.encode(lowerHex));
 
       for (let i = 0; i < 40; i++) {
         const char = hexPart[i];
 
-        // Numbers don't have case, skip
         if (char >= '0' && char <= '9') {
           continue;
         }
 
         const byte = hash[i >> 1];
-        const nibble = i % 2 === 0 ? byte >> 4 : byte & 0x0f;
-        const isUpper = char === char.toUpperCase();
+        const nibble = (i & 1) === 0 ? byte >> 4 : byte & 0x0f;
+        const shouldBeUpper = nibble >= 8; // EIP-55 rule
+        const isUpperActual = char === char.toUpperCase();
 
-        // EIP-55 rule: nibble >= 8 means uppercase, < 8 means lowercase
-        if ((nibble >= 8 && !isUpper) || (nibble < 8 && isUpper)) {
+        if (shouldBeUpper !== isUpperActual) {
           return failure(`Invalid ${label} checksum (EIP-55)`);
         }
       }

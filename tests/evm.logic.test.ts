@@ -4,14 +4,13 @@ import {createValidator} from '../src/utils/createValidator';
 import {getEVMLogic} from '../src/utils/evm';
 import {runBaseValidatorTests} from './base.shared';
 
-// Create a generic EVM validator to test the core logic
 const validateGenericEVM = createValidator(getEVMLogic('GenericEVM'));
 
 describe('EVM Logic validation (getEVMLogic)', () => {
   runBaseValidatorTests(validateGenericEVM);
 
   describe('positive cases', () => {
-    it(`validates a valid eip-55 checksum address`, () => {
+    it('validates a correct EIP-55 checksum address', () => {
       const addr = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045';
       const result = validateGenericEVM(addr);
       expect(result.isValid).toBe(true);
@@ -21,17 +20,24 @@ describe('EVM Logic validation (getEVMLogic)', () => {
       }
     });
 
-    it('validates and normalizes mixed-case/uppercase addresses', () => {
-      const lowercase = '0xd8da6bf26964af9d7eed9e03e53415d37aa96045';
-      const uppercase = '0XD8DA6BF26964AF9D7EED9E03E53415D37AA96045';
+    it('accepts all-lowercase addresses', () => {
+      const addr = '0xd8da6bf26964af9d7eed9e03e53415d37aa96045';
+      const result = validateGenericEVM(addr);
+      expect(result.isValid).toBe(true);
+      if (result.isValid) expect(result.address).toBe(addr);
+    });
 
-      [lowercase, uppercase].forEach((addr) => {
-        const result = validateGenericEVM(addr);
-        expect(result.isValid).toBe(true);
-        if (result.isValid) {
-          expect(result.address).toBe(lowercase);
-        }
-      });
+    it('accepts all-uppercase addresses (normalizes to lowercase)', () => {
+      const addr = '0XD8DA6BF26964AF9D7EED9E03E53415D37AA96045';
+      const result = validateGenericEVM(addr);
+      expect(result.isValid).toBe(true);
+      if (result.isValid) expect(result.address).toBe(addr.toLowerCase());
+    });
+
+    it('accepts the 0X uppercase prefix variant', () => {
+      const addr = '0XD8DA6BF26964AF9D7EED9E03E53415D37AA96045';
+      const result = validateGenericEVM(addr);
+      expect(result.isValid).toBe(true);
     });
 
     it('validates an address consisting mostly of numbers', () => {
@@ -53,15 +59,18 @@ describe('EVM Logic validation (getEVMLogic)', () => {
     });
 
     it('fails on invalid hexadecimal characters', () => {
-      expect(
-        validateGenericEVM('0xG8dA6BF26964aF9D7eEd9e03E53415D37aA96045').isValid
-      ).toBe(false);
+      const result = validateGenericEVM(
+        '0xG8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
+      );
+      expect(result.isValid).toBe(false);
+      if (!result.isValid) {
+        expect(result.error).toContain('hexadecimal');
+      }
     });
 
-    it('rejects addresses with invalid lengths (not 42 characters)', () => {
-      const tooShort = '0xd8da6bf26964af9d7eed9e03e53415d37aa96'; // 40 chars
-      const tooLong = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA960451'; // 43 chars
-
+    it('rejects addresses with invalid length (not 42 chars)', () => {
+      const tooShort = '0xd8da6bf26964af9d7eed9e03e53415d37aa96';
+      const tooLong = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA960451';
       [tooShort, tooLong].forEach((addr) => {
         const result = validateGenericEVM(addr);
         expect(result.isValid).toBe(false);
@@ -72,22 +81,33 @@ describe('EVM Logic validation (getEVMLogic)', () => {
     });
 
     it('fails on missing or incorrect 0x prefix', () => {
-      expect(
-        validateGenericEVM('d8da6bf26964af9d7eed9e03e53415d37aa96045').isValid
-      ).toBe(false);
-      expect(
-        validateGenericEVM('1xd8da6bf26964af9d7eed9e03e53415d37aa96045').isValid
-      ).toBe(false);
+      const wrongPrefix = '0yd8dA6BF26964aF9D7eEd9e03E53415D37aA96045';
+      const wrongPrefix2 = 'xxd8da6bf26964af9d7eed9e03e53415d37aa96045';
+      [wrongPrefix, wrongPrefix2].forEach((addr) => {
+        const result = validateGenericEVM(addr);
+        expect(result.isValid).toBe(false);
+        if (!result.isValid) {
+          expect(result.error).toContain('prefix');
+        }
+      });
     });
 
-    it('rejects non-hexadecimal symbols (whitespace or special chars)', () => {
-      expect(
-        validateGenericEVM('0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045 ')
-          .isValid
-      ).toBe(false); // Trailing space
-      expect(
-        validateGenericEVM('0x!8dA6BF26964aF9D7eEd9e03E53415D37aA96045').isValid
-      ).toBe(false); // Special char
+    it('rejects non-hex symbols (whitespace, special chars)', () => {
+      const trailingSpace = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045 ';
+      const specialChar = '0x!8dA6BF26964aF9D7eEd9e03E53415D37aA96045';
+      [trailingSpace, specialChar].forEach((addr) => {
+        const result = validateGenericEVM(addr);
+        expect(result.isValid).toBe(false);
+      });
+    });
+
+    it('rejects 0X prefix with incorrect checksum', () => {
+      const addr = '0XD8dA6BF26964aF9D7eEd9e03E53415D37aA96044';
+      const result = validateGenericEVM(addr);
+      expect(result.isValid).toBe(false);
+      if (!result.isValid) {
+        expect(result.error).toContain('checksum');
+      }
     });
   });
 });
