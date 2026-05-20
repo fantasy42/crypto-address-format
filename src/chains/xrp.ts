@@ -5,29 +5,24 @@ import {base58Check} from '../utils/base58Check';
 import {createValidator} from '../utils/createValidator';
 
 /**
- * Supported XRP Ledger address categories returned by `validateXRP()`.
+ * Supported XRP Ledger address categories.
  */
 export type XRPAddressType = 'Classic' | 'X-Address-Mainnet';
 
 /**
- * Result object returned by `validateXRP()`.
- *
- * Contains either a validated XRP address with its detected type,
- * or an error message if validation fails.
+ * Result returned by `validateXRP()`.
  */
 export type XRPValidationResult = ValidationResult<XRPAddressType>;
 
 /**
- * Validates an XRP Ledger address by checking its encoding, prefix, and checksum.
+ * Validates an XRP Ledger address.
  *
  * Supports standard Base58 Classic addresses (starting with 'r') and
- * X-Addresses (starting with 'X') for Mainnet. The function verifies the
- * double-SHA256 checksum and network-specific version bytes, returning a
- * typed result object without throwing on invalid input.
+ * X‑Addresses (starting with 'X') for Mainnet. Verifies double‑SHA256 checksum
+ * and network‑specific version bytes.
  *
  * @param address - The XRP address to validate.
- * @returns A `ValidationResult` indicating whether the address is valid and,
- * if valid, its detected address type (Classic or X-Address-Mainnet).
+ * @returns A `ValidationResult` indicating whether the address is valid and, if valid, its detected type.
  */
 export const validateXRP = createValidator<XRPValidationResult>(
   (address, {failure, success}) => {
@@ -45,7 +40,6 @@ export const validateXRP = createValidator<XRPValidationResult>(
         return failure(res.error);
       }
 
-      // Classic payload is exactly 20 bytes (AccountID)
       if (res.payload.length !== 20) {
         return failure('Invalid Classic address payload');
       }
@@ -53,7 +47,6 @@ export const validateXRP = createValidator<XRPValidationResult>(
       return success('Classic', address);
     }
 
-    // Mainnet X-Address (Tagged Address)
     if (address.startsWith('X')) {
       if (address.length < 29 || address.length > 59) {
         return failure('Invalid X-Address string length');
@@ -68,10 +61,6 @@ export const validateXRP = createValidator<XRPValidationResult>(
         return failure(res.error);
       }
 
-      /**
-       * X-Address payload structure:
-       * [20b AccountID] + [1b Flag] + [8b Tag/Reserved] = 29 bytes
-       */
       if (res.payload.length !== 29) {
         return failure('Invalid X-Address payload structure');
       }

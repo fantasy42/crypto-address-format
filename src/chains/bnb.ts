@@ -4,41 +4,33 @@ import {createValidator} from '../utils/createValidator';
 import {getEVMLogic} from '../utils/evm';
 
 /**
- * Supported BNB address categories returned by `validateBNB()`.
+ * Supported BNB address categories.
  */
 export type BNBAddressType = 'BNB';
 
 /**
- * Result object returned by `validateBNB()`.
- *
- * Contains either a validated BNB address with its detected type,
- * or an error message if validation fails.
+ * Result returned by `validateBNB()`.
  */
 export type BNBValidationResult = ValidationResult<BNBAddressType>;
 
 /**
- * Validates a BNB Smart Chain (BSC/BEP-20) address by checking its format and EIP-55 checksum.
+ * Validates a BNB Smart Chain (BSC/BEP‑20) address.
  *
- * Since BSC is EVM-compatible, this function verifies the standard 42-character
- * hex format and the visual integrity of mixed-case checksum addresses using
- * Keccak-256 hashing.
+ * Checks the standard 42‑character hex format and EIP‑55 checksum (Keccak‑256).
  *
  * @param address - The BNB address to validate.
- * @returns A `ValidationResult` indicating whether the address is valid.
+ * @returns A `ValidationResult` indicating whether the address is valid and, if valid, its detected type.
  */
 export const validateBNB = createValidator<BNBValidationResult>(
   getEVMLogic('BNB')
 );
 
 /**
- * Validates a BEP-20 token address (such as USDT or BUSD) on the BNB Smart Chain.
+ * Validates a BEP‑20 token address on the BNB Smart Chain.
  *
- * Since BEP-20 tokens use the standard EVM address format, this function
- * checks for the `0x` prefix and verifies the EIP-55 checksum if the address
- * is mixed-case. It ensures the address is a visually and cryptographically
- * valid destination for token transfers on BSC.
+ * Alias of `validateBNB` – same format and checksum rules.
  *
- * @param address - The BEP-20 address to validate.
- * @returns A `ValidationResult` indicating whether the address is valid.
+ * @param address - The BEP‑20 address to validate.
+ * @returns A `ValidationResult` indicating whether the address is valid and, if valid, its detected type.
  */
 export const validateBEP20 = validateBNB;

@@ -4,29 +4,22 @@ import type {ValidationResult} from '../types';
 import {validateTRC20} from '../chains/trx';
 
 /**
- * Supported Tron address categories for USDT TRC-20 tokens.
- * Inherits the standard `TronAddressType`.
+ * Supported USDT TRC-20 address categories.
  */
 export type USDTTRC20AddressType = TronAddressType;
 
 /**
- * Result object returned by `validateUSDTTRC20()`.
- *
- * Contains either a validated USDT TRC-20 address with its detected type,
- * or an error message if validation fails.
+ * Result returned by `validateUSDTTRC20()`.
  */
 export type USDTTRC20ValidationResult = ValidationResult<USDTTRC20AddressType>;
 
 /**
- * Validates a USDT address on the TRON network.
+ * Validates a USDT address on the TRON network (TRC‑20).
  *
- * Since USDT on TRON is a TRC-20 token, this function utilizes `validateTRC20()`
- * to verify the Base58Check encoding and the `T` prefix. It ensures the
- * address is a visually and cryptographically valid destination for Tether (USDT)
- * transfers on the TRON network.
+ * Alias of `validateTRC20` – verifies Base58Check encoding and the `T` prefix.
  *
- * @param address - The USDT TRC-20 address to validate.
- * @returns A `ValidationResult` indicating whether the address is valid.
+ * @param address - The USDT TRC‑20 address to validate.
+ * @returns A `ValidationResult` indicating whether the address is valid and, if valid, its detected type.
  */
 export function validateUSDTTRC20(address: string): USDTTRC20ValidationResult {
   return validateTRC20(address);

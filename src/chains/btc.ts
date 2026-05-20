@@ -7,28 +7,23 @@ import {base58Check} from '../utils/base58Check';
 import {createValidator} from '../utils/createValidator';
 
 /**
- * Supported Bitcoin address categories returned by `validateBTC()`.
+ * Supported Bitcoin address categories.
  */
 export type BitcoinAddressType = 'P2PKH' | 'P2SH' | 'Bech32' | 'Bech32m';
 
 /**
- * Result object returned by `validateBTC()`.
- *
- * Contains either a validated Bitcoin address with its detected type,
- * or an error message if validation fails.
+ * Result returned by `validateBTC()`.
  */
 export type BTCValidationResult = ValidationResult<BitcoinAddressType>;
 
 /**
- * Validates a Bitcoin mainnet address by checking its encoding and checksum.
+ * Validates a Bitcoin mainnet address.
  *
- * Supports legacy Base58 (`P2PKH`, `P2SH`) as well as SegWit and Taproot
- * addresses encoded with Bech32 or Bech32m. The function returns a typed
- * result object and does not throw on invalid input.
+ * Supports legacy Base58 (P2PKH `1...`, P2SH `3...`) and native SegWit/Taproot
+ * (Bech32 `bc1...`, Bech32m `bc1p...`).
  *
  * @param address - The Bitcoin address to validate.
- * @returns A `ValidationResult` indicating whether the address is valid and,
- * if valid, its detected address type.
+ * @returns A `ValidationResult` indicating whether the address is valid and, if valid, its detected type.
  */
 export const validateBTC = createValidator<BTCValidationResult>(
   (address, context): BTCValidationResult => {

@@ -4,30 +4,25 @@ import {base58} from '../utils/base58';
 import {createValidator} from '../utils/createValidator';
 
 /**
- * Supported Solana address categories returned by `validateSOL()`.
+ * Supported Solana address categories.
  */
 export type SolanaAddressType = 'Solana';
 
 /**
- * Result object returned by `validateSOL()`.
- *
- * Contains either a validated Solana address with its detected type,
- * or an error message if validation fails.
+ * Result returned by `validateSOL()`.
  */
 export type SOLValidationResult = ValidationResult<SolanaAddressType>;
 
 /**
- * Validates a Solana mainnet address by checking its Base58 encoding and key length.
+ * Validates a Solana mainnet address.
  *
  * Solana addresses are 32‑byte public keys encoded with Bitcoin’s Base58 alphabet.
  * The function verifies the character set, decodes the string, and ensures the
  * resulting byte array is exactly 32 bytes. No on‑curve verification is performed,
- * so both standard wallet keys and PDAs are accepted. The function does not throw
- * on invalid input.
+ * so both standard wallet keys and PDAs are accepted.
  *
  * @param address - The Solana address to validate.
- * @returns A `ValidationResult` indicating whether the address is valid and,
- * if valid, its detected address type.
+ * @returns A `ValidationResult` indicating whether the address is valid and, if valid, its detected type.
  */
 export const validateSOL = createValidator<SOLValidationResult>(
   (address, context): SOLValidationResult => {

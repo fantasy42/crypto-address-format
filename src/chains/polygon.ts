@@ -4,27 +4,22 @@ import {createValidator} from '../utils/createValidator';
 import {getEVMLogic} from '../utils/evm';
 
 /**
- * Supported Polygon address categories returned by `validatePolygon()`.
+ * Supported Polygon address categories.
  */
 export type PolygonAddressType = 'Polygon';
 
 /**
- * Result object returned by `validatePolygon()`.
- *
- * Contains either a validated Polygon address with its detected type,
- * or an error message if validation fails.
+ * Result returned by `validatePolygon()`.
  */
 export type PolygonValidationResult = ValidationResult<PolygonAddressType>;
 
 /**
- * Validates a Polygon (MATIC) address by checking its format and EIP-55 checksum.
+ * Validates a Polygon (MATIC) mainnet address.
  *
- * Since Polygon PoS is EVM-compatible, this function verifies the standard
- * 42-character hex format and the visual integrity of mixed-case checksum
- * addresses using Keccak-256 hashing.
+ * Checks the 42‑character hex format and EIP‑55 checksum (Keccak‑256).
  *
  * @param address - The Polygon address to validate.
- * @returns A `ValidationResult` indicating whether the address is valid.
+ * @returns A `ValidationResult` indicating whether the address is valid and, if valid, its detected type.
  */
 export const validatePolygon = createValidator<PolygonValidationResult>(
   getEVMLogic('Polygon')
@@ -33,12 +28,9 @@ export const validatePolygon = createValidator<PolygonValidationResult>(
 /**
  * Validates a MATIC token address on the Polygon network.
  *
- * Since Polygon tokens use the standard Ethereum address format, this function
- * checks for the `0x` prefix and verifies the EIP-55 checksum if the address
- * is mixed-case. It ensures the address is a visually and cryptographically
- * valid destination for token transfers on Polygon.
+ * Alias of `validatePolygon` – same format and checksum rules.
  *
  * @param address - The MATIC address to validate.
- * @returns A `ValidationResult` indicating whether the address is valid.
+ * @returns A `ValidationResult` indicating whether the address is valid and, if valid, its detected type.
  */
 export const validateMatic = validatePolygon;

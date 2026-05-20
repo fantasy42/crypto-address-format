@@ -4,7 +4,7 @@ import {crc16Ton} from '../utils/crc16';
 import {createValidator} from '../utils/createValidator';
 
 /**
- * Supported TON address categories returned by `validateTON()`.
+ * Supported TON address categories.
  */
 export type TONAddressType =
   | 'Raw'
@@ -14,10 +14,7 @@ export type TONAddressType =
   | 'UserFriendly-Testnet-NonBounceable';
 
 /**
- * Result object returned by `validateTON()`.
- *
- * Contains either a validated TON address with its detected type,
- * or an error message if validation fails.
+ * Result returned by `validateTON()`.
  */
 export type TONValidationResult = ValidationResult<TONAddressType>;
 
@@ -29,20 +26,17 @@ const RAW_REGEXP = /^(-?\d+):([a-fA-F0-9]{64})$/i;
 const FRIENDLY_REGEXP = /^[A-Za-z0-9+/_-]{48}$/;
 
 /**
- * Validates a TON (The Open Network) address by checking its format,
- * encoding, and checksum.
+ * Validates a TON (The Open Network) address.
  *
  * Supports raw workchain:hex addresses as well as user‑friendly base64(url)
- * addresses across mainnet and testnet. The function returns a typed result
- * object and does not throw on invalid input.
+ * addresses across mainnet and testnet. The function verifies encoding,
+ * checksum, and address tag.
  *
- * @param address - The TON address string to validate.
- * @returns A `ValidationResult` indicating whether the address is valid and,
- * if valid, its detected category (Raw, Bounceable, etc.).
+ * @param address - The TON address to validate.
+ * @returns A `ValidationResult` indicating whether the address is valid and, if valid, its detected type.
  */
 export const validateTON = createValidator<TONValidationResult>(
   (address, context): TONValidationResult => {
-    // 1. Raw address (workchain:hex)
     if (address.includes(':')) {
       const match = RAW_REGEXP.exec(address);
       if (!match) {
@@ -54,7 +48,6 @@ export const validateTON = createValidator<TONValidationResult>(
       const workchainString = match[1];
       const workchain = Number.parseInt(workchainString, 10);
 
-      // Workchain must be a canonical integer (typically 0 or -1)
       if (Number.isNaN(workchain) || String(workchain) !== workchainString) {
         return context.failure('Invalid workchain identifier');
       }
@@ -62,7 +55,6 @@ export const validateTON = createValidator<TONValidationResult>(
       return context.success('Raw', address);
     }
 
-    // 2. User‑friendly base64 / base64url
     if (FRIENDLY_REGEXP.test(address)) {
       let data: Uint8Array;
       try {
@@ -85,13 +77,12 @@ export const validateTON = createValidator<TONValidationResult>(
         return context.failure('Invalid address checksum');
       }
 
-      // Parse tag byte
       let tag = payload[0];
       let isTestOnly = false;
 
       if (tag & TEST_FLAG) {
         isTestOnly = true;
-        tag ^= TEST_FLAG; // Clear test flag bit
+        tag ^= TEST_FLAG;
       }
 
       if (tag !== BOUNCEABLE_TAG && tag !== NON_BOUNCEABLE_TAG) {
@@ -102,7 +93,6 @@ export const validateTON = createValidator<TONValidationResult>(
 
       const isBounceable = tag === BOUNCEABLE_TAG;
 
-      // Resolve the exact address sub‑type
       let resolvedType: TONAddressType;
       if (isTestOnly) {
         resolvedType = isBounceable
@@ -122,7 +112,6 @@ export const validateTON = createValidator<TONValidationResult>(
 );
 
 function decodeBase64To36Bytes(src: string): Uint8Array {
-  // Convert URL‑safe alphabet to standard base64
   const normalized = src.replaceAll('-', '+').replaceAll('_', '/');
 
   const binaryString = atob(normalized);

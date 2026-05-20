@@ -4,29 +4,22 @@ import type {ValidationResult} from '../types';
 import {validateBEP20} from '../chains/bnb';
 
 /**
- * Supported BNB address categories for USDT BEP-20 tokens.
- * Inherits the standard `BNBAddressType`.
+ * Supported USDT BEP-20 address categories.
  */
 export type USDTBEP20AddressType = BNBAddressType;
 
 /**
- * Result object returned by `validateUSDTBEP20()`.
- *
- * Contains either a validated USDT BEP-20 address with its detected type,
- * or an error message if validation fails.
+ * Result returned by `validateUSDTBEP20()`.
  */
 export type USDTBEP20ValidationResult = ValidationResult<USDTBEP20AddressType>;
 
 /**
- * Validates a USDT address on the BNB Smart Chain (BSC).
+ * Validates a USDT address on the BNB Smart Chain (BEP‑20).
  *
- * Since USDT on BSC follows the BEP-20 token standard, this function utilizes
- * `validateBEP20()` to verify the address format, prefix, and EIP-55 checksum.
- * It ensures the address is a valid destination for Tether (USDT) transfers
- * on the BNB Smart Chain.
+ * Alias of `validateBEP20` – verifies the standard EVM hex format and EIP‑55 checksum.
  *
- * @param address - The USDT BEP-20 address to validate.
- * @returns A `ValidationResult` indicating whether the address is valid.
+ * @param address - The USDT BEP‑20 address to validate.
+ * @returns A `ValidationResult` indicating whether the address is valid and, if valid, its detected type.
  */
 export function validateUSDTBEP20(address: string): USDTBEP20ValidationResult {
   return validateBEP20(address);

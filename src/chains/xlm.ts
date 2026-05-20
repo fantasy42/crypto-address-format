@@ -5,28 +5,24 @@ import {crc16xmodem} from '../utils/crc16';
 import {createValidator} from '../utils/createValidator';
 
 /**
- * Supported Stellar address types returned by `validateXLM()`.
+ * Supported Stellar address categories.
  */
 export type StellarAddressType = 'Standard' | 'Muxed';
 
 /**
- * Result object returned by `validateXLM()`.
- *
- * Contains either a validated Stellar address with its detected type,
- * or an error message if validation fails.
+ * Result returned by `validateXLM()`.
  */
 export type XLMValidationResult = ValidationResult<StellarAddressType>;
 
 /**
- * Validates a Stellar mainnet address, accepting standard (G…) and muxed (M…) accounts.
+ * Validates a Stellar mainnet address.
  *
- * Performs full validation: checks the prefix, length, Base32 encoding, version byte,
- * key length, and CRC16‑XModem checksum. Other address types (secret seeds, claimable
- * balances, etc.) are rejected. The function returns a typed result object and does
- * not throw on invalid input.
+ * Accepts standard (G…) and muxed (M…) accounts. Performs full validation:
+ * prefix, length, Base32 encoding, version byte, key length, and CRC16‑XModem checksum.
+ * Rejects secret seeds, claimable balances, and other non‑account strings.
  *
  * @param address - The Stellar address to validate.
- * @returns A `ValidationResult` indicating validity and the address type.
+ * @returns A `ValidationResult` indicating whether the address is valid and, if valid, its detected type.
  */
 export const validateXLM = createValidator<XLMValidationResult>(
   (address, context): XLMValidationResult => {

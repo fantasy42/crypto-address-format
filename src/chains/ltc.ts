@@ -7,28 +7,23 @@ import {base58Check} from '../utils/base58Check';
 import {createValidator} from '../utils/createValidator';
 
 /**
- * Supported Litecoin address categories returned by `validateLTC()`.
+ * Supported Litecoin address categories.
  */
 export type LitecoinAddressType = 'P2PKH' | 'P2SH' | 'Bech32' | 'Bech32m';
 
 /**
- * Result object returned by `validateLTC()`.
- *
- * Contains either a validated Litecoin address with its detected type,
- * or an error message if validation fails.
+ * Result returned by `validateLTC()`.
  */
 export type LTCValidationResult = ValidationResult<LitecoinAddressType>;
 
 /**
- * Validates a Litecoin mainnet address by checking its encoding, prefix, and checksum.
+ * Validates a Litecoin mainnet address.
  *
- * Supports legacy Base58 (`P2PKH`, `P2SH` via L/M/3 prefixes) as well as native SegWit
- * and Taproot addresses encoded with Bech32 or Bech32m using the `ltc` human-readable part.
- * The function returns a typed result object and does not throw on invalid input.
+ * Supports legacy Base58 (P2PKH `L...`, P2SH `M...` or `3...`) and native SegWit/Taproot
+ * (Bech32 `ltc1...`, Bech32m `ltc1p...`).
  *
  * @param address - The Litecoin address to validate.
- * @returns A `ValidationResult` indicating whether the address is valid and,
- * if valid, its detected address type.
+ * @returns A `ValidationResult` indicating whether the address is valid and, if valid, its detected type.
  */
 export const validateLTC = createValidator<LTCValidationResult>(
   (address, context): LTCValidationResult => {
