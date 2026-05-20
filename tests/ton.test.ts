@@ -1,6 +1,6 @@
 import {describe, it, expect} from 'vite-plus/test';
 
-import {crc16} from '../src/utils/crc16';
+import {crc16Ton} from '../src/utils/crc16';
 import {validateTON} from '../src/chains/ton';
 import {runBaseValidatorTests} from './base.shared';
 
@@ -155,7 +155,7 @@ describe('validateton', () => {
       // Manually craft a 36‑byte address with a bogus tag (0x00) and valid CRC.
       // The payload (34 bytes) is all zeros except tag=0x00, then compute CRC.
       const payload = new Uint8Array(34); // tag 0x00, workchain 0, zero hash
-      const crc = crc16(payload);
+      const crc = crc16Ton(payload);
       const raw = new Uint8Array(36);
       raw.set(payload);
       raw.set(crc, 34);

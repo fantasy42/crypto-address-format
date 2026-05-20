@@ -1,6 +1,6 @@
 import type {ValidationResult} from '../types';
 
-import {crc16} from '../utils/crc16';
+import {crc16Ton} from '../utils/crc16';
 import {createValidator} from '../utils/createValidator';
 
 /**
@@ -76,7 +76,7 @@ export const validateTON = createValidator<TONValidationResult>(
       // 34-byte payload + 2-byte CRC16
       const payload = data.subarray(0, 34);
       const incomingCrc = data.subarray(34, 36);
-      const calculatedCrc = crc16(payload);
+      const calculatedCrc = crc16Ton(payload);
 
       if (
         calculatedCrc[0] !== incomingCrc[0] ||
