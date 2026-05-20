@@ -125,6 +125,16 @@
         "types": "./dist/trx.d.cts"
       }
     },
+    "./xlm": {
+      "import": {
+        "default": "./dist/xlm.mjs",
+        "types": "./dist/xlm.d.mts"
+      },
+      "require": {
+        "default": "./dist/xlm.cjs",
+        "types": "./dist/xlm.d.cts"
+      }
+    },
     "./xrp": {
       "import": {
         "default": "./dist/xrp.mjs",
