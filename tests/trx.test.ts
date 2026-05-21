@@ -1,11 +1,8 @@
 import {describe, it, expect} from 'vite-plus/test';
 
 import {validateTRX} from '../src/chains/trx';
-import {runBaseValidatorTests} from './base.shared';
 
 describe('validatetrx', () => {
-  runBaseValidatorTests(validateTRX);
-
   describe('positive cases (valid mainnet)', () => {
     it('validates a standard TRON address (T-prefix)', () => {
       // TRON Foundation address

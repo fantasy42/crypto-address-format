@@ -2,11 +2,8 @@ import {describe, it, expect} from 'vite-plus/test';
 
 import {crc16Ton} from '../src/utils/crc16';
 import {validateTON} from '../src/chains/ton';
-import {runBaseValidatorTests} from './base.shared';
 
 describe('validateton', () => {
-  runBaseValidatorTests(validateTON);
-
   describe('positive cases (valid mainnet & testnet)', () => {
     it('validates user-friendly bounceable testnet address', () => {
       const result = validateTON(

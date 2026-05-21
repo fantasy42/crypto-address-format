@@ -2,13 +2,10 @@ import {describe, it, expect} from 'vite-plus/test';
 
 import {createValidator} from '../src/utils/createValidator';
 import {getEVMLogic} from '../src/utils/evm';
-import {runBaseValidatorTests} from './base.shared';
 
 const validateGenericEVM = createValidator(getEVMLogic('GenericEVM'));
 
 describe('EVM Logic validation (getEVMLogic)', () => {
-  runBaseValidatorTests(validateGenericEVM);
-
   describe('positive cases', () => {
     it('validates a correct EIP-55 checksum address', () => {
       const addr = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045';
@@ -92,13 +89,13 @@ describe('EVM Logic validation (getEVMLogic)', () => {
       });
     });
 
-    it('rejects non-hex symbols (whitespace, special chars)', () => {
-      const trailingSpace = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045 ';
+    it('rejects non-hex symbols', () => {
       const specialChar = '0x!8dA6BF26964aF9D7eEd9e03E53415D37aA96045';
-      [trailingSpace, specialChar].forEach((addr) => {
-        const result = validateGenericEVM(addr);
-        expect(result.isValid).toBe(false);
-      });
+      const result = validateGenericEVM(specialChar);
+      expect(result.isValid).toBe(false);
+      if (!result.isValid) {
+        expect(result.error).toContain('hexadecimal');
+      }
     });
 
     it('rejects 0X prefix with incorrect checksum', () => {

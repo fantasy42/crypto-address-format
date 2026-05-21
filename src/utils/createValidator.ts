@@ -8,6 +8,8 @@ export interface ValidationContext {
   failure: (message: string) => ValidationResult<never>;
 }
 
+const MAX_ADDRESS_LENGTH = 256;
+
 /**
  * Wraps a validation function with common input checks and error handling.
  *
@@ -24,12 +26,37 @@ export function createValidator<R extends ValidationResult>(
   };
 
   return (address: string): R => {
-    if (!address || typeof address !== 'string') {
+    if (address == null || typeof address !== 'string') {
       return {isValid: false, error: 'Address must be a non-empty string'} as R;
     }
 
+    const trimmed = address.trim();
+    if (trimmed.length === 0) {
+      return {
+        isValid: false,
+        error: 'Address must not be empty or whitespace',
+      } as R;
+    }
+
+    if (trimmed.length > MAX_ADDRESS_LENGTH) {
+      return {
+        isValid: false,
+        error: `Address exceeds maximum length of ${MAX_ADDRESS_LENGTH} characters`,
+      } as R;
+    }
+
+    for (let i = 0; i < trimmed.length; i++) {
+      const code = trimmed.charCodeAt(i);
+      if (code < 32 || code > 126) {
+        return {
+          isValid: false,
+          error: 'Address contains invalid characters',
+        } as R;
+      }
+    }
+
     try {
-      return validate(address, context);
+      return validate(trimmed, context);
     } catch (error) {
       const message =
         error instanceof Error && error.message

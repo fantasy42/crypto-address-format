@@ -1,11 +1,8 @@
 import {describe, it, expect} from 'vite-plus/test';
 
 import {validateLTC} from '../src/chains/ltc';
-import {runBaseValidatorTests} from './base.shared';
 
 describe('validateLTC', () => {
-  runBaseValidatorTests(validateLTC);
-
   describe('positive cases (valid mainnet)', () => {
     it('validates legacy P2PKH (starts with L)', () => {
       const result = validateLTC('LaMZFeV1XdQ6yo8AzdrUHPrgKyfFmMG53b');

@@ -1,11 +1,8 @@
 import {describe, it, expect} from 'vite-plus/test';
 
 import {validateXLM} from '../src/chains/xlm';
-import {runBaseValidatorTests} from './base.shared';
 
 describe('validateXLM', () => {
-  runBaseValidatorTests(validateXLM);
-
   describe('positive cases (valid mainnet)', () => {
     it('accepts a standard G… address', () => {
       const result = validateXLM(

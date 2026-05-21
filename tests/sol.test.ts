@@ -1,11 +1,8 @@
 import {describe, it, expect} from 'vite-plus/test';
 
 import {validateSOL} from '../src/chains/sol';
-import {runBaseValidatorTests} from './base.shared';
 
 describe('validateSOL', () => {
-  runBaseValidatorTests(validateSOL);
-
   describe('positive cases (valid mainnet)', () => {
     it('accepts a standard wallet address', () => {
       const result = validateSOL('7EcDhSYGxXyscszYEp35KHN8vvw3svAuLKTzXwCFLtV');

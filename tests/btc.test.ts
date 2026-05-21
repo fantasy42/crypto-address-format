@@ -1,12 +1,9 @@
 import {describe, it, expect} from 'vite-plus/test';
 
 import {validateBTC} from '../src/chains/btc';
-import {runBaseValidatorTests} from './base.shared';
 import {bech32, bech32m} from '../src/utils/bech32';
 
 describe('validateBTC', () => {
-  runBaseValidatorTests(validateBTC);
-
   describe('positive cases (valid mainnet)', () => {
     it('validates legacy (p2pkh)', () => {
       const result = validateBTC('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa');

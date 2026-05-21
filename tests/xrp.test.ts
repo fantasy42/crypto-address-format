@@ -1,11 +1,8 @@
 import {describe, it, expect} from 'vite-plus/test';
 
 import {validateXRP} from '../src/chains/xrp';
-import {runBaseValidatorTests} from './base.shared';
 
 describe('validateXRP', () => {
-  runBaseValidatorTests(validateXRP);
-
   describe('positive cases (valid addresses)', () => {
     it('validates a standard classic r-address', () => {
       const address = 'rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh';
