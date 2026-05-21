@@ -25,10 +25,10 @@ export function createBaseCodec(ALPHABET: string): BaseCodec {
 
   const BASE = ALPHABET.length;
   const LEADER = ALPHABET.charAt(0);
-  const FACTOR = Math.log(BASE) / Math.log(256); // bytes → base‑string length ratio
-  const iFACTOR = Math.log(256) / Math.log(BASE); // base‑string → bytes length ratio
+  // Pre‑computed length ratios for worst‑case buffer allocation
+  const FACTOR = Math.log(BASE) / Math.log(256);
+  const iFACTOR = Math.log(256) / Math.log(BASE);
 
-  // Build a lookup table: character code → digit value (255 = invalid)
   const BASE_MAP = new Uint8Array(256);
   BASE_MAP.fill(255);
   for (let i = 0; i < ALPHABET.length; i++) {
@@ -55,7 +55,7 @@ export function createBaseCodec(ALPHABET: string): BaseCodec {
       return '';
     }
 
-    // Count leading zero bytes
+    // Count leading zero bytes – each becomes one leader char in output
     let leadingZeros = 0;
     let start = 0;
     while (start < src.length && src[start] === 0) {
@@ -63,11 +63,10 @@ export function createBaseCodec(ALPHABET: string): BaseCodec {
       start++;
     }
 
-    // Allocate a worst‑case buffer for the encoded digits
     const digitCount = ((src.length - start) * iFACTOR + 1) >>> 0;
     const digits = new Uint8Array(digitCount);
 
-    // Convert byte array to base digits (big‑endian)
+    // Convert remaining bytes to base digits (big‑endian)
     let length = 0;
     for (let i = start; i < src.length; i++) {
       let carry = src[i];
@@ -93,7 +92,6 @@ export function createBaseCodec(ALPHABET: string): BaseCodec {
       firstDigit++;
     }
 
-    // Build the final string (leader chars for each zero byte + digits)
     let result = LEADER.repeat(leadingZeros);
     for (let i = firstDigit; i < digitCount; i++) {
       result += ALPHABET.charAt(digits[i]);
@@ -111,7 +109,7 @@ export function createBaseCodec(ALPHABET: string): BaseCodec {
       return new Uint8Array();
     }
 
-    // Count leading leader characters
+    // Count leading leader chars – each contributes a zero byte
     let leadingZeros = 0;
     let pos = 0;
     while (pos < source.length && source[pos] === LEADER) {
@@ -119,11 +117,10 @@ export function createBaseCodec(ALPHABET: string): BaseCodec {
       pos++;
     }
 
-    // Allocate a worst‑case buffer for the decoded bytes
     const byteCount = ((source.length - pos) * FACTOR + 1) >>> 0;
     const bytes = new Uint8Array(byteCount);
 
-    // Convert base string to byte array (big‑endian)
+    // Convert base digits back to bytes
     let length = 0;
     for (; pos < source.length; pos++) {
       const charCode = source.charCodeAt(pos);
@@ -147,7 +144,7 @@ export function createBaseCodec(ALPHABET: string): BaseCodec {
         carry = (carry / 256) >>> 0;
       }
       if (carry !== 0) {
-        throw new Error('Non-zero carry');
+        return undefined; // arithmetic overflow
       }
       length = j;
     }
@@ -158,7 +155,6 @@ export function createBaseCodec(ALPHABET: string): BaseCodec {
       firstByte++;
     }
 
-    // Combine leading zeroes + decoded payload
     const result = new Uint8Array(leadingZeros + (byteCount - firstByte));
     result.set(bytes.subarray(firstByte), leadingZeros);
     return result;
