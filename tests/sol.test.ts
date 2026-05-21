@@ -36,12 +36,20 @@ describe('validateSOL', () => {
     });
 
     it('rejects valid Base58 but wrong decoded length', () => {
-      // A short 31‑char Base58 string that decodes to something other than 32 bytes
       const shortKey = '2n4E4gULW4M3n5Y4Sj1jL6k9p9zZ8g3GwXbQ1DpQF8k';
       const result = validateSOL(shortKey);
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
         expect(result.error).toMatch(/32 bytes/);
+      }
+    });
+
+    it('rejects valid Base58 that decodes to something other than 32 bytes', () => {
+      const shortKey = '2n4E4gULW4M3n5Y4Sj1jL6k9p9zZ8g3GwXbQ1DpQF8k';
+      const result = validateSOL(shortKey);
+      expect(result.isValid).toBe(false);
+      if (!result.isValid) {
+        expect(result.error).toMatch(/exactly 32 bytes/);
       }
     });
 

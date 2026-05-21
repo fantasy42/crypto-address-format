@@ -32,14 +32,8 @@ export const validateSOL = createValidator<SOLValidationResult>(
       );
     }
 
-    if (!/^[1-9A-HJ-NP-Za-km-z]+$/.test(address)) {
-      return context.failure('Address contains invalid Base58 characters');
-    }
-
-    let decoded: Uint8Array;
-    try {
-      decoded = base58.decode(address);
-    } catch {
+    const decoded = base58.decodeUnsafe(address);
+    if (!decoded) {
       return context.failure('Invalid Base58 encoding');
     }
 
