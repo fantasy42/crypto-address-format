@@ -2,11 +2,11 @@
 
 Universal, lightweight format validation for cryptocurrency addresses.
 
-`crypto-address-format` provides high-performance validators for Bitcoin, Ethereum, BNB, TRON, and popular token standards. It is fully compatible with browser, Node.js, and Edge runtimes.
-
-- **Cryptographic:** Performs full checksum verification (Bech32, EIP-55, Base58Check).
-- **Type-Safe:** Built with TypeScript for predictable results.
-- **Modular:** Tree-shakeable exports for minimal bundle sizes.
+- **Checksums, not regex** – full verification of Bech32, EIP‑55, Base58Check, CRC16, and more.
+- **Tree‑shakeable** – import a single validator and leave the rest behind. Never ship unused code.
+- **Runs everywhere** – browsers, Node.js, Deno, Edge. No polyfills, no DOM.
+- **Type‑safe** – every result is a strictly typed discriminated union. No ambiguous `boolean | string`.
+- **Blazing fast** – pure synchronous functions, perfect for real‑time form validation. 350+ test vectors ensure correctness.
 
 ## Installation
 
@@ -16,7 +16,7 @@ npm install crypto-address-format
 
 ## Basic Usage
 
-All validators follow a consistent pattern, returning a strictly typed `ValidationResult` object.
+Each validator returns a strictly typed `ValidationResult` and automatically trims whitespace, rejecting non‑ASCII, empty, or overly long input.
 
 ```ts
 import { validateBTC, validateETH, validateTRX } from 'crypto-address-format';
@@ -30,8 +30,6 @@ if (result.isValid) {
   console.error(`Validation failed: ${result.error}`);
 }
 ```
-
-> **Note:** Always validate a cleaned string. Trim leading and trailing whitespace before passing user input to any validator, otherwise a valid address may fail validation.
 
 ## Validators
 
@@ -47,14 +45,6 @@ Validates Ethereum mainnet addresses using **EIP-55** checksum integrity.
 
 Alias for `validateETH`. Validates Ethereum-based **USDT** (ERC-20) destination addresses.
 
-`validateTRX(address)` / `validateTRC20(address)`
-
-Validates TRON mainnet addresses using **Base58Check** encoding.
-
-`validateUSDTTRC20(address)`
-
-Alias for `validateTRX`. Specifically validates TRON-based **USDT** (TRC-20) destination addresses.
-
 `validateBNB(address)` / `validateBEP20(address)`
 
 Validates BNB Smart Chain (**BSC**) addresses using EVM-compatible EIP-55 checksums.
@@ -63,26 +53,48 @@ Validates BNB Smart Chain (**BSC**) addresses using EVM-compatible EIP-55 checks
 
 Alias for `validateBNB`. Specifically validates BSC-based **USDT** (BEP-20) destination addresses.
 
-`validateTON(address)`
+`validateSOL(address)`
 
-Validates TON (The Open Network) addresses, supporting both **Raw** (workchain:hex) and **User‑Friendly** (base64/base64url) formats across mainnet and testnet, with full CRC16 checksum verification.
+Validates Solana mainnet addresses using **Base58** encoding, ensuring the decoded public key is exactly 32 bytes. Accepts both standard wallet keys and PDAs.
+
+`validateTRX(address)` / `validateTRC20(address)`
+
+Validates TRON mainnet addresses using **Base58Check** encoding.
+
+`validateUSDTTRC20(address)`
+
+Alias for `validateTRX`. Specifically validates TRON-based **USDT** (TRC-20) destination addresses.
 
 `validateXRP(address)`
 
 Validates XRP Ledger addresses, supporting both **Classic (r-prefix)** and **Mainnet X-Addresses** using double-SHA256 checksums.
 
+`validateLTC(address)`
+
+Validates Litecoin mainnet addresses including **Legacy (P2PKH)**, **P2SH (M and 3 prefixes)**, **Native SegWit (Bech32)**, and **Taproot (Bech32m)**.
+
+`validateXLM(address)`
+
+Validates Stellar mainnet addresses, supporting **Standard (G…)** and **Muxed (M…)** accounts using Base32 encoding and CRC16‑XModem checksum verification.
+
 `validatePolygon(address)` / `validateMatic(address)`
 
 Validates Polygon (PoS) mainnet addresses using **EIP-55** checksum integrity.
 
+`validateTON(address)`
+
+Validates TON (The Open Network) addresses, supporting both **Raw** (workchain:hex) and **User‑Friendly** (base64/base64url) formats across mainnet and testnet, with full CRC16 checksum verification.
+
 ## Modular Imports
 
-For optimized bundle sizes, you can import any validator directly from its specific entry point:
+Tree‑shaking works out of the box. Import only what you use:
 
 ```ts
 import { validateETH } from 'crypto-address-format/eth';
 import { validateUSDTBEP20 } from 'crypto-address-format/usdt-bep20';
 ```
+
+> A single validator adds **less than 3 kB gzipped** to your bundle.
 
 ## Result Format
 
