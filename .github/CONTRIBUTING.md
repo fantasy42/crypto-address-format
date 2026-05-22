@@ -29,15 +29,7 @@ Run this after pulling remote changes and before getting started:
 vp install
 ```
 
-### 2. Run the Development Server
-
-Before submitting your changes, please ensure that the code is properly formatted and passes all linting/type checks. Vite+ handles this automatically:
-
-```bash
-vp dev
-```
-
-### 3. Check and Format Your Code
+### 2. Check and Format Your Code
 
 Before submitting your changes, please ensure that the code is properly formatted and passes all linting/type checks. Vite+ handles this automatically:
 
@@ -45,7 +37,7 @@ Before submitting your changes, please ensure that the code is properly formatte
 vp check
 ```
 
-### 4. Run Tests
+### 3. Run Tests
 
 Ensure all existing tests pass and write new tests for any added features or bug fixes. Vitest is bundled directly, so use:
 
@@ -57,9 +49,9 @@ vp test
 
 To ensure a smooth review process, please follow this checklist before submitting your work:
 
-- [ ] **Sync and Install**: Run `vp install` after pulling remote changes and before getting started.
-- [ ] **Validate Code**: Run `vp check` and `vp test` to format, lint, type check, and test all changes.
-- [ ] **Run Additional Scripts**: Check if there are specific `vite.config.ts` tasks or `package.json` scripts necessary for validation, and run them via `vp run <script>`.
+- **Sync and Install**: Run `vp install` after pulling remote changes and before getting started.
+- **Validate Code**: Run `vp check` and `vp test` to format, lint, type check, and test all changes.
+- **Run Additional Scripts**: Check if there are specific `vite.config.ts` tasks or `package.json` scripts necessary for validation, and run them via `vp run <script>`.
 
 Once you are ready:
 
