@@ -1,33 +1,41 @@
-import {defineConfig} from 'vite-plus';
-import {readdirSync} from 'node:fs';
+import {glob} from 'tinyglobby';
 import path from 'node:path';
 
-const getEntries = (dir: string) => {
-  const absolutePath = path.join(process.cwd(), dir);
-  const files = readdirSync(absolutePath);
+async function getEntries() {
+  const files = await glob([
+    'src/chains/*.ts',
+    'src/aliases/*.ts',
+    '!src/**/*.test.ts',
+  ]);
 
   const entries: Record<string, string> = {};
+  const seen = new Set<string>();
 
   for (const file of files) {
-    const {name, ext} = path.parse(file);
-
-    if (ext === '.ts' && !file.includes('.test')) {
-      entries[name] = `${dir}/${file}`;
+    const name = path.parse(file).name;
+    if (seen.has(name)) {
+      throw new Error(
+        `Duplicate entry name "${name}" from files: ${entries[name]} and ${file}. Rename one of the source files.`
+      );
     }
+
+    seen.add(name);
+    entries[name] = file;
   }
 
   return entries;
-};
+}
 
-export default defineConfig({
+const entries = await getEntries();
+
+export default {
   staged: {
     '*': 'vp check --fix',
   },
   pack: {
     entry: {
       index: 'src/index.ts',
-      ...getEntries('src/chains'),
-      ...getEntries('src/aliases'),
+      ...entries,
     },
     format: ['esm', 'cjs'],
     dts: true,
@@ -50,4 +58,4 @@ export default defineConfig({
     bracketSpacing: false,
     ignorePatterns: ['*.yml', '*.md'],
   },
-});
+};
