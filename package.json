@@ -1,6 +1,6 @@
 {
   "name": "crypto-address-format",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Lightweight crypto address validator with checksum verification for Bitcoin, Ethereum, Solana and more",
   "keywords": [
     "address-validator",
