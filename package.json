@@ -1,19 +1,17 @@
 {
   "name": "crypto-address-format",
   "version": "0.2.0",
-  "description": "Universal format validation for crypto wallet addresses.",
+  "description": "Lightweight crypto address validator with checksum verification for Bitcoin, Ethereum, Solana and more",
   "keywords": [
     "address-validator",
     "base58",
     "bech32",
     "bitcoin",
-    "blockchain",
-    "bnb",
-    "crypto",
+    "checksum",
+    "crypto-address-validator",
     "eip55",
     "ethereum",
-    "ton",
-    "tron",
+    "solana",
     "wallet"
   ],
   "homepage": "https://github.com/fantasy42/crypto-address-format#readme",
