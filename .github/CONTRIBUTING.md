@@ -1,6 +1,6 @@
-# Contributing to crypto-address-format
+# Contributing to cryptovalid
 
-First off, thank you for considering contributing to `crypto-address-format`! It's people like you that make this tool better for everyone.
+First off, thank you for considering contributing to `cryptovalid`! It's people like you that make this tool better for everyone.
 
 For detailed coding standards, validator templates, test coverage expectations, and security guidelines, please read the **[AGENTS.md](./AGENTS.md)** file – it’s the single source of truth for development conventions.
 

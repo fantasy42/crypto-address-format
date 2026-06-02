@@ -1,4 +1,4 @@
-# crypto-address-format &middot; [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/fantasy42/crypto-address-format/blob/master/LICENSE) [![npm version](https://img.shields.io/npm/v/crypto-address-format.svg?style=flat)](https://www.npmjs.com/package/crypto-address-format) [![tests](https://github.com/fantasy42/crypto-address-format/actions/workflows/test.yml/badge.svg)](https://github.com/fantasy42/crypto-address-format/actions/workflows/test.yml) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/fantasy42/crypto-address-format/blob/master/.github/CONTRIBUTING.md)
+# cryptovalid &middot; [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/fantasy42/crypto-address-format/blob/master/LICENSE) [![npm version](https://img.shields.io/npm/v/cryptovalid.svg?style=flat)](https://www.npmjs.com/package/cryptovalid) [![tests](https://github.com/fantasy42/crypto-address-format/actions/workflows/test.yml/badge.svg)](https://github.com/fantasy42/crypto-address-format/actions/workflows/test.yml) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/fantasy42/crypto-address-format/blob/master/.github/CONTRIBUTING.md)
 
 **Lightweight crypto address validator with checksum verification for Bitcoin, Ethereum, Solana and more.**
 
@@ -11,13 +11,13 @@
 ## Installation
 
 ```bash
-npm install crypto-address-format
+npm install cryptovalid
 ```
 
 ## Basic Usage
 
 ```ts
-import { validateBTC, validateETH, validateTRX } from 'crypto-address-format';
+import { validateBTC, validateETH, validateTRX } from 'cryptovalid';
 
 const result = validateBTC('bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4');
 
@@ -50,8 +50,8 @@ Token aliases (`validateUSDTERC20`, `validateUSDTBEP20`, `validateUSDTTRC20`) ar
 ## Modular Imports
 
 ```ts
-import { validateETH } from 'crypto-address-format/eth';
-import { validateUSDTTRC20 } from 'crypto-address-format/usdt-trc20';
+import { validateETH } from 'cryptovalid/eth';
+import { validateUSDTTRC20 } from 'cryptovalid/usdt-trc20';
 ```
 
 > A single validator adds **< 3 kB gzipped**.

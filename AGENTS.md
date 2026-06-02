@@ -1,6 +1,6 @@
 # Project overview
 
-`crypto-address-format` is a TypeScript‑first, lightweight library for validating cryptocurrency addresses with checksums. It provides high‑performance validators for Bitcoin, Ethereum, BNB, TRON, Solana, and various token standards (ERC‑20, BEP‑20, TRC‑20).
+`cryptovalid` is a TypeScript‑first, lightweight library for validating cryptocurrency addresses with checksums. It provides high‑performance validators for Bitcoin, Ethereum, BNB, TRON, Solana, and various token standards (ERC‑20, BEP‑20, TRC‑20).
 
 The library is designed for both frontend and backend developers, fully compatible with browsers, Node.js, and Edge runtimes. Its main purpose is to ensure that cryptocurrency addresses are properly formatted and valid before any transactions are made, improving security and user experience by preventing funds from being sent to invalid destinations.
 
@@ -26,11 +26,11 @@ The library exports a `ValidationResult` type and a set of validator functions. 
 
 ### Modular Imports
 
-All functions are available from the main entry point (`crypto-address-format`). For minimal bundle sizes, use tree‑shakeable sub‑paths:
+All functions are available from the main entry point (`cryptovalid`). For minimal bundle sizes, use tree‑shakeable sub‑paths:
 
-- `crypto-address-format/eth`
-- `crypto-address-format/usdt-bep20`
-- `crypto-address-format/btc`
+- `cryptovalid/eth`
+- `cryptovalid/usdt-bep20`
+- `cryptovalid/btc`
 
 ## Project Structure
 

@@ -1,5 +1,5 @@
 {
-  "name": "crypto-address-format",
+  "name": "cryptovalid",
   "version": "0.2.1",
   "description": "Lightweight crypto address validator with checksum verification for Bitcoin, Ethereum, Solana and more",
   "keywords": [
