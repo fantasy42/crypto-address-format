@@ -3,7 +3,7 @@
 
 [remote.github]
 owner = "fantasy42"
-repo = "crypto-address-format"
+repo = "cryptovalid"
 
 [changelog]
 header = ""

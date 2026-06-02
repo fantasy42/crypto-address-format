@@ -14,15 +14,15 @@
     "solana",
     "wallet"
   ],
-  "homepage": "https://github.com/fantasy42/crypto-address-format#readme",
+  "homepage": "https://github.com/fantasy42/cryptovalid#readme",
   "bugs": {
-    "url": "https://github.com/fantasy42/crypto-address-format/issues"
+    "url": "https://github.com/fantasy42/cryptovalid/issues"
   },
   "license": "MIT",
   "author": "Fantasy <fntsy42@pm.me>",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/fantasy42/crypto-address-format.git"
+    "url": "git+https://github.com/fantasy42/cryptovalid.git"
   },
   "files": [
     "dist"

@@ -9,8 +9,8 @@ For detailed coding standards, validator templates, test coverage expectations, 
 1.  **Fork the repository** on GitHub.
 2.  **Clone your fork** locally:
     ```bash
-    git clone https://github.com/your-username/crypto-address-format.git
-    cd crypto-address-format
+    git clone https://github.com/your-username/cryptovalid.git
+    cd cryptovalid
     ```
 
 ## Development Workflow: Using Vite+
