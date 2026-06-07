@@ -2,6 +2,7 @@ import type {ValidationResult} from '../types';
 
 import {base58} from '../utils/base58';
 import {base58Check} from '../utils/base58Check';
+import {createBatchValidator} from '../utils/createBatchValidator';
 import {createValidator} from '../utils/createValidator';
 
 /**
@@ -47,6 +48,16 @@ export const validateTRX = createValidator<TronValidationResult>(
 );
 
 /**
+ * Validates a batch of TRON mainnet addresses.
+ *
+ * Wraps `validateTRX`; processes all items and collects results in order.
+ *
+ * @param items - Array of addresses or `BatchItem` objects.
+ * @returns Array of `BatchValidationResult`, preserving input order.
+ */
+export const validateTRXBatch = createBatchValidator(validateTRX);
+
+/**
  * Validates a TRC‑20 token address on the TRON network.
  *
  * Alias of `validateTRX` – same format and checksum rules.
@@ -55,3 +66,13 @@ export const validateTRX = createValidator<TronValidationResult>(
  * @returns A `ValidationResult` indicating whether the address is valid and, if valid, its detected type.
  */
 export const validateTRC20 = validateTRX;
+
+/**
+ * Validates a batch of TRC‑20 token addresses on the TRON network.
+ *
+ * Alias for `validateTRXBatch`.
+ *
+ * @param items - Array of addresses or `BatchItem` objects.
+ * @returns Array of `BatchValidationResult`, preserving input order.
+ */
+export const validateTRC20Batch = validateTRXBatch;

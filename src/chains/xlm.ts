@@ -2,6 +2,7 @@ import type {ValidationResult} from '../types';
 
 import {decode, encode} from '../utils/base32';
 import {crc16xmodem} from '../utils/crc16';
+import {createBatchValidator} from '../utils/createBatchValidator';
 import {createValidator} from '../utils/createValidator';
 
 /**
@@ -92,3 +93,13 @@ export const validateXLM = createValidator<XLMValidationResult>(
     return context.success(type, address);
   }
 );
+
+/**
+ * Validates a batch of Stellar mainnet addresses.
+ *
+ * Wraps `validateXLM`; processes all items and collects results in order.
+ *
+ * @param items - Array of addresses or `BatchItem` objects.
+ * @returns Array of `BatchValidationResult`, preserving input order.
+ */
+export const validateXLMBatch = createBatchValidator(validateXLM);

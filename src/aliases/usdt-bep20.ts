@@ -1,7 +1,7 @@
 import type {BNBAddressType} from '../chains/bnb';
 import type {ValidationResult} from '../types';
 
-import {validateBEP20} from '../chains/bnb';
+import {validateBEP20, validateBEP20Batch} from '../chains/bnb';
 
 /**
  * Supported USDT BEP-20 address categories.
@@ -24,3 +24,13 @@ export type USDTBEP20ValidationResult = ValidationResult<USDTBEP20AddressType>;
 export function validateUSDTBEP20(address: string): USDTBEP20ValidationResult {
   return validateBEP20(address);
 }
+
+/**
+ * Validates a batch of USDT addresses on the BNB Smart Chain (BEP‑20).
+ *
+ * Alias for `validateBEP20Batch`.
+ *
+ * @param items - Array of addresses or `BatchItem` objects.
+ * @returns Array of `BatchValidationResult`, preserving input order.
+ */
+export const validateUSDTBEP20Batch = validateBEP20Batch;

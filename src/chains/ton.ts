@@ -1,6 +1,7 @@
 import type {ValidationResult} from '../types';
 
 import {crc16Ton} from '../utils/crc16';
+import {createBatchValidator} from '../utils/createBatchValidator';
 import {createValidator} from '../utils/createValidator';
 
 /**
@@ -110,6 +111,16 @@ export const validateTON = createValidator<TONValidationResult>(
     return context.failure('Unsupported TON address format or character set');
   }
 );
+
+/**
+ * Validates a batch of TON addresses.
+ *
+ * Wraps `validateTON`; processes all items and collects results in order.
+ *
+ * @param items - Array of addresses or `BatchItem` objects.
+ * @returns Array of `BatchValidationResult`, preserving input order.
+ */
+export const validateTONBatch = createBatchValidator(validateTON);
 
 function decodeBase64To36Bytes(src: string): Uint8Array {
   const normalized = src.replaceAll('-', '+').replaceAll('_', '/');

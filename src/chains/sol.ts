@@ -1,6 +1,7 @@
 import type {ValidationResult} from '../types';
 
 import {base58} from '../utils/base58';
+import {createBatchValidator} from '../utils/createBatchValidator';
 import {createValidator} from '../utils/createValidator';
 
 /**
@@ -44,3 +45,13 @@ export const validateSOL = createValidator<SOLValidationResult>(
     return context.success('Solana', address);
   }
 );
+
+/**
+ * Validates a batch of Solana mainnet addresses.
+ *
+ * Wraps `validateSOL`; processes all items and collects results in order.
+ *
+ * @param items - Array of addresses or `BatchItem` objects.
+ * @returns Array of `BatchValidationResult`, preserving input order.
+ */
+export const validateSOLBatch = createBatchValidator(validateSOL);

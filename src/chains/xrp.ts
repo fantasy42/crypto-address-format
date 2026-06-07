@@ -2,6 +2,7 @@ import type {ValidationResult} from '../types';
 
 import {base58Xrp} from '../utils/base58';
 import {base58Check} from '../utils/base58Check';
+import {createBatchValidator} from '../utils/createBatchValidator';
 import {createValidator} from '../utils/createValidator';
 
 /**
@@ -71,3 +72,13 @@ export const validateXRP = createValidator<XRPValidationResult>(
     return failure('Unsupported XRP address prefix');
   }
 );
+
+/**
+ * Validates a batch of XRP Ledger addresses.
+ *
+ * Wraps `validateXRP`; processes all items and collects results in order.
+ *
+ * @param items - Array of addresses or `BatchItem` objects.
+ * @returns Array of `BatchValidationResult`, preserving input order.
+ */
+export const validateXRPBatch = createBatchValidator(validateXRP);

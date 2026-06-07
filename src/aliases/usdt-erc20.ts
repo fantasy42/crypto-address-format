@@ -1,7 +1,7 @@
 import type {EthereumAddressType} from '../chains/eth';
 import type {ValidationResult} from '../types';
 
-import {validateERC20} from '../chains/eth';
+import {validateERC20, validateERC20Batch} from '../chains/eth';
 
 /**
  * Supported USDT ERC-20 address categories.
@@ -24,3 +24,13 @@ export type USDTERC20ValidationResult = ValidationResult<USDTERC20AddressType>;
 export function validateUSDTERC20(address: string): USDTERC20ValidationResult {
   return validateERC20(address);
 }
+
+/**
+ * Validates a batch of USDT addresses on the Ethereum network (ERC‑20).
+ *
+ * Alias for `validateERC20Batch`.
+ *
+ * @param items - Array of addresses or `BatchItem` objects.
+ * @returns Array of `BatchValidationResult`, preserving input order.
+ */
+export const validateUSDTERC20Batch = validateERC20Batch;

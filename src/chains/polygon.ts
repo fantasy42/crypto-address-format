@@ -1,5 +1,6 @@
 import type {ValidationResult} from '../types';
 
+import {createBatchValidator} from '../utils/createBatchValidator';
 import {createValidator} from '../utils/createValidator';
 import {getEVMLogic} from '../utils/evm';
 
@@ -26,6 +27,16 @@ export const validatePolygon = createValidator<PolygonValidationResult>(
 );
 
 /**
+ * Validates a batch of Polygon (MATIC) addresses.
+ *
+ * Wraps `validatePolygon`; processes all items and collects results in order.
+ *
+ * @param items - Array of addresses or `BatchItem` objects.
+ * @returns Array of `BatchValidationResult`, preserving input order.
+ */
+export const validatePolygonBatch = createBatchValidator(validatePolygon);
+
+/**
  * Validates a MATIC token address on the Polygon network.
  *
  * Alias of `validatePolygon` – same format and checksum rules.
@@ -34,3 +45,13 @@ export const validatePolygon = createValidator<PolygonValidationResult>(
  * @returns A `ValidationResult` indicating whether the address is valid and, if valid, its detected type.
  */
 export const validateMatic = validatePolygon;
+
+/**
+ * Validates a batch of MATIC token addresses on the Polygon network.
+ *
+ * Alias for `validatePolygonBatch`.
+ *
+ * @param items - Array of addresses or `BatchItem` objects.
+ * @returns Array of `BatchValidationResult`, preserving input order.
+ */
+export const validateMaticBatch = validatePolygonBatch;

@@ -1,7 +1,7 @@
 import type {TronAddressType} from '../chains/trx';
 import type {ValidationResult} from '../types';
 
-import {validateTRC20} from '../chains/trx';
+import {validateTRC20, validateTRC20Batch} from '../chains/trx';
 
 /**
  * Supported USDT TRC-20 address categories.
@@ -24,3 +24,13 @@ export type USDTTRC20ValidationResult = ValidationResult<USDTTRC20AddressType>;
 export function validateUSDTTRC20(address: string): USDTTRC20ValidationResult {
   return validateTRC20(address);
 }
+
+/**
+ * Validates a batch of USDT addresses on the TRON network (TRC‑20).
+ *
+ * Alias for `validateTRC20Batch`.
+ *
+ * @param items - Array of addresses or `BatchItem` objects.
+ * @returns Array of `BatchValidationResult`, preserving input order.
+ */
+export const validateUSDTTRC20Batch = validateTRC20Batch;

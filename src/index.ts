@@ -1,17 +1,37 @@
-export {validateBTC} from './chains/btc';
-export {validateXRP} from './chains/xrp';
-export {validateTON} from './chains/ton';
-export {validateLTC} from './chains/ltc';
-export {validateSOL} from './chains/sol';
-export {validateXLM} from './chains/xlm';
-export {validatePolygon, validateMatic} from './chains/polygon';
-export {validateETH, validateERC20} from './chains/eth';
-export {validateTRX, validateTRC20} from './chains/trx';
-export {validateBNB, validateBEP20} from './chains/bnb';
+export {validateBTC, validateBTCBatch} from './chains/btc';
+export {validateXRP, validateXRPBatch} from './chains/xrp';
+export {validateTON, validateTONBatch} from './chains/ton';
+export {validateLTC, validateLTCBatch} from './chains/ltc';
+export {validateSOL, validateSOLBatch} from './chains/sol';
+export {validateXLM, validateXLMBatch} from './chains/xlm';
+export {
+  validatePolygon,
+  validateMatic,
+  validatePolygonBatch,
+  validateMaticBatch,
+} from './chains/polygon';
+export {
+  validateETH,
+  validateERC20,
+  validateETHBatch,
+  validateERC20Batch,
+} from './chains/eth';
+export {
+  validateTRX,
+  validateTRC20,
+  validateTRXBatch,
+  validateTRC20Batch,
+} from './chains/trx';
+export {
+  validateBNB,
+  validateBEP20,
+  validateBNBBatch,
+  validateBEP20Batch,
+} from './chains/bnb';
 
-export {validateUSDTERC20} from './aliases/usdt-erc20';
-export {validateUSDTTRC20} from './aliases/usdt-trc20';
-export {validateUSDTBEP20} from './aliases/usdt-bep20';
+export {validateUSDTERC20, validateUSDTERC20Batch} from './aliases/usdt-erc20';
+export {validateUSDTTRC20, validateUSDTTRC20Batch} from './aliases/usdt-trc20';
+export {validateUSDTBEP20, validateUSDTBEP20Batch} from './aliases/usdt-bep20';
 
 export type * from './types';
 

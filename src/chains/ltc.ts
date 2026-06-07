@@ -4,6 +4,7 @@ import type {ValidationContext} from '../utils/createValidator';
 import {bech32, bech32m, fromWordsUnsafe} from '../utils/bech32';
 import {base58} from '../utils/base58';
 import {base58Check} from '../utils/base58Check';
+import {createBatchValidator} from '../utils/createBatchValidator';
 import {createValidator} from '../utils/createValidator';
 
 /**
@@ -44,6 +45,16 @@ export const validateLTC = createValidator<LTCValidationResult>(
     return context.failure('Unsupported address format or prefix');
   }
 );
+
+/**
+ * Validates a batch of Litecoin mainnet addresses.
+ *
+ * Wraps `validateLTC`; processes all items and collects results in order.
+ *
+ * @param items - Array of addresses or `BatchItem` objects.
+ * @returns Array of `BatchValidationResult`, preserving input order.
+ */
+export const validateLTCBatch = createBatchValidator(validateLTC);
 
 function validateLtcBech32(
   original: string,
