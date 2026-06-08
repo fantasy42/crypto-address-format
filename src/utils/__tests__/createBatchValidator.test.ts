@@ -2,7 +2,7 @@ import type {ValidationResult, BatchItem} from '../../types';
 
 import {describe, it, expect} from 'vite-plus/test';
 
-import {batch} from '../../batch';
+import {batch} from '../batch';
 import {createBatchValidator} from '../createBatchValidator';
 import {createValidator} from '../createValidator';
 

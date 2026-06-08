@@ -1,9 +1,9 @@
-import type {ValidationResult, BatchItem} from '../src/types';
+import type {ValidationResult, BatchItem} from '../../types';
 
 import {describe, it, expect} from 'vite-plus/test';
 
-import {batch} from '../src/batch';
-import {createValidator} from '../src/utils/createValidator';
+import {batch} from '../batch';
+import {createValidator} from '../createValidator';
 
 const okValidator = createValidator<ValidationResult<'Ok'>>((address) => ({
   isValid: true,

@@ -4,7 +4,7 @@ import type {
   BatchValidationResult,
 } from '../types';
 
-import {batch} from '../batch';
+import {batch} from './batch';
 
 /**
  * Creates a batch‑validated version of a single‑address validator.

@@ -1,4 +1,8 @@
-import type {ValidationResult, BatchItem, BatchValidationResult} from './types';
+import type {
+  ValidationResult,
+  BatchItem,
+  BatchValidationResult,
+} from '../types';
 
 /**
  * Validates every address in `items` with the supplied validator.
