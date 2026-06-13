@@ -24,13 +24,52 @@ The library exports a `ValidationResult` type and a set of validator functions. 
 - **`validatePolygon(address)` / `validateMatic(address)`** – Polygon PoS addresses (EIP‑55).
 - **`validateTON(address)`** – TON addresses (Raw and User‑Friendly formats, CRC16).
 
+### Batch Validators
+
+Every validator above has a corresponding batch function that accepts an array of `BatchItem` objects and returns an array of `BatchValidationResult` objects.
+Batch functions are built with `createBatchValidator` and re‑use the exact same validation logic as their single‑address counterparts.
+
+**Available batch functions:**
+
+- `validateBTCBatch(items)`
+- `validateETHBatch(items)` / `validateERC20Batch(items)`
+- `validateUSDTERC20Batch(items)`
+- `validateBNBBatch(items)` / `validateBEP20Batch(items)`
+- `validateUSDTBEP20Batch(items)`
+- `validateSOLBatch(items)`
+- `validateTRXBatch(items)` / `validateTRC20Batch(items)`
+- `validateUSDTTRC20Batch(items)`
+- `validateXRPBatch(items)`
+- `validateLTCBatch(items)`
+- `validateXLMBatch(items)`
+- `validatePolygonBatch(items)` / `validateMaticBatch(items)`
+- `validateTONBatch(items)`
+
+Usage snippet:
+
+```ts
+// items can be plain strings or { address, id } objects
+const results = validateETHBatch([
+  '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045',
+  '0xinvalid',
+  { address: '0x…', id: 'field2' },
+]);
+
+results.forEach((r) => {
+  // r.isValid, r.type, r.address, r.error, r.original, r.index, r.id
+});
+```
+
+Each result preserves the original trimmed input, its position in the array, and an optional `id` you supplied.
+
 ### Modular Imports
 
 All functions are available from the main entry point (`cryptovalid`). For minimal bundle sizes, use tree‑shakeable sub‑paths:
 
-- `cryptovalid/eth`
-- `cryptovalid/usdt-bep20`
-- `cryptovalid/btc`
+- `cryptovalid/eth` – `validateETH`, `validateETHBatch`, etc.
+- `cryptovalid/btc` – `validateBTC`, `validateBTCBatch`
+- `cryptovalid/usdt-bep20` – `validateUSDTBEP20`, `validateUSDTBEP20Batch`
+- (other chains follow the same pattern)
 
 ## Project Structure
 
@@ -82,8 +121,9 @@ Vite+ is distinct from Vite itself; it invokes Vite internally for commands like
 
 ## Code style and conventions
 
-1. **TypeScript Style** – `camelCase` for validator functions (e.g., `validateBTC`), `PascalCase` for types and interfaces.
-2. **Validator Factory** – Every validator must be created with `src/utils/createValidator.ts`. The factory already:
+1. **TypeScript Style** – `camelCase` for validator functions (e.g., `validateBTC`, `validateBTCBatch`), `PascalCase` for types and interfaces.
+2. **Validator Factory** – Every single‑address validator must be created with `src/utils/createValidator.ts`.
+   Batch validators are created with `src/utils/createBatchValidator.ts` (a thin wrapper that applies a single‑address validator to an array of `BatchItem` objects). The factory already:
    - Trims the input.
    - Ensures the string is non‑empty, ≤256 chars, and contains only ASCII printable characters (codes 32–126).
    - Catches synchronous exceptions and converts them to `ValidationResult` failures.
@@ -94,31 +134,64 @@ Vite+ is distinct from Vite itself; it invokes Vite internally for commands like
    - No spaces inside brackets (`bracketSpacing: false`)
    - Trailing commas: `es5`
 4. **Linting/Typing Rules** – TypeScript `strict: true`, `noUnusedLocals: true`. Oxlint is type‑aware (`typeAware: true`). Use `vp check` to validate and autofix format issues.
-5. **Documentation Template** – Use the following template for all validators:
+5. **Documentation Templates** – Use the following templates for all validators.
 
-    ```ts
-    /** Supported [chain] address categories. */
-    export type ChainAddressType = ...;
+   Single-address validator:
 
-    /** Result returned by `validateChain()`. */
-    export type ChainValidationResult = ValidationResult<ChainAddressType>;
+   ```ts
+   /** Supported [chain] address categories. */
+   export type ChainAddressType = ...;
 
-    /**
-     * Validates a [chain] address ([encoding details]).
-     *
-     * [Brief description of format and checks].
-     *
-     * @param address - The [chain] address to validate.
-     * @returns A `ValidationResult` indicating whether the address is valid and, if valid, its detected type.
-     */
-    export const validateChain = ...
-    ```
+   /** Result returned by `validateChain()`. */
+   export type ChainValidationResult = ValidationResult<ChainAddressType>;
 
-    For aliases (e.g., `validateUSDTERC20`), the docstring must explicitly state that it is an alias for the base validator and mention the returned type value.
+   /**
+    * Validates a [chain] address ([encoding details]).
+    *
+    * [Brief description of format and checks].
+    *
+    * @param address - The [chain] address to validate.
+    * @returns A `ValidationResult` indicating whether the address is valid and, if valid, its detected type.
+    */
+   export const validateChain = ...
+   ```
+
+   Alias (single):
+
+   For aliases (e.g., `validateUSDTERC20`), the docstring must explicitly state that it is an alias for the base validator and mention the returned type value.
+
+   Batch validator (chain):
+
+   ```ts
+   /**
+    * Validates a batch of [chain] addresses.
+    *
+    * Wraps `validate[Chain]`; processes all items and collects results in order.
+    *
+    * @param items - Array of addresses or `BatchItem` objects.
+    * @returns Array of `BatchValidationResult`, preserving input order.
+    */
+   export const validate[Chain]Batch = createBatchValidator(validate[Chain]);
+   ```
+
+   Batch validator (alias):
+
+   ```ts
+   /**
+    * Validates a batch of USDT addresses on the [network] ([standard]).
+    *
+    * Alias for `validate[Chain]Batch`.
+    *
+    * @param items - Array of addresses or `BatchItem` objects.
+    * @returns Array of `BatchValidationResult`, preserving input order.
+    */
+   export const validateUSDTXXXBatch = validate[Chain]Batch;
+   ```
 
 ## Testing and quality
 
 1. **Test location** – `tests/*.test.ts` (e.g., `btc.test.ts`, `eth.test.ts`). Internal utility tests live in `src/utils/__tests__/`.
+   Batch validators are covered by a generic batch test (`batch.test.ts`); individual chain batch functions do not require separate tests, as they use the same validation logic.
 2. **Test coverage** – Aim for ≥95% line coverage on all validator logic and all utility functions (base58, bech32, checksums). New validators must include:
    - Positive cases (valid addresses of each type)
    - Negative cases (invalid length, wrong charset, checksum mismatch, wrong network)
@@ -133,6 +206,7 @@ Vite+ is distinct from Vite itself; it invokes Vite internally for commands like
    - A clear explanation of why the change does not weaken validation.
 2. **Backward compatibility** – Validation logic must remain backward‑compatible. Adding a new address type is allowed; changing the validation of an existing type (e.g., suddenly rejecting previously valid addresses) requires a major version bump.
 3. **Error messages** – The error string in `ValidationResult` is descriptive and stable (intended for display to end users). It is not localized and will always be in English. Do not change error messages without a strong reason – downstream code may depend on string matching.
+4. **Batch validation** – Batch functions reuse the same single‑address validation logic and therefore inherit all security and reliability guarantees. No additional risks are introduced.
 
 ## Contribution and pull requests
 
