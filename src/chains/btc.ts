@@ -3,9 +3,10 @@ import type {ValidationContext} from '../utils/createValidator';
 
 import {bech32, bech32m, fromWordsUnsafe} from '../utils/bech32';
 import {base58} from '../utils/base58';
-import {base58Check} from '../utils/base58Check';
+import {base58Check, mapBase58CheckError} from '../utils/base58Check';
 import {createBatchValidator} from '../utils/createBatchValidator';
 import {createValidator} from '../utils/createValidator';
+import {ValidationErrorCodes} from '../constants';
 
 /**
  * Supported Bitcoin address categories.
@@ -38,7 +39,10 @@ export const validateBTC = createValidator<BTCValidationResult>(
       return validateBase58(address, context);
     }
 
-    return context.failure('Unsupported address format or prefix');
+    return context.failure(
+      ValidationErrorCodes.UNSUPPORTED_TYPE,
+      'Unsupported address format or prefix'
+    );
   }
 );
 
@@ -56,9 +60,12 @@ function validateBech32(
   original: string,
   lower: string,
   {success, failure}: ValidationContext
-) {
+): BTCValidationResult {
   if (original !== lower && original !== original.toUpperCase()) {
-    return failure('Mixed case is invalid for Bech32');
+    return failure(
+      ValidationErrorCodes.MIXED_CASE,
+      'Mixed case is invalid for Bech32'
+    );
   }
 
   let decoded;
@@ -72,36 +79,57 @@ function validateBech32(
       decoded = bech32m.decode(lower, 1023);
       isBech32m = true;
     } catch {
-      return failure('Invalid Bech32/Bech32m checksum or encoding');
+      return failure(
+        ValidationErrorCodes.INVALID_CHECKSUM,
+        'Invalid Bech32/Bech32m checksum or encoding'
+      );
     }
   }
 
   if (decoded.prefix !== 'bc') {
-    return failure('Invalid human-readable part (HRP) for Bitcoin');
+    return failure(
+      ValidationErrorCodes.INVALID_PREFIX,
+      'Invalid human-readable part (HRP) for Bitcoin'
+    );
   }
 
   if (decoded.words.length === 0) {
-    return failure('Missing witness version byte');
+    return failure(
+      ValidationErrorCodes.INVALID_FORMAT,
+      'Missing witness version byte'
+    );
   }
 
   const witnessVersion = decoded.words[0];
 
   if (witnessVersion > 16) {
-    return failure('Invalid witness version (must be 0-16)');
+    return failure(
+      ValidationErrorCodes.INVALID_VERSION,
+      'Invalid witness version (must be 0-16)'
+    );
   }
 
   if (witnessVersion === 0 && isBech32m) {
-    return failure('Version 0 must use Bech32 encoding');
+    return failure(
+      ValidationErrorCodes.INVALID_ENCODING,
+      'Version 0 must use Bech32 encoding'
+    );
   }
 
   if (witnessVersion >= 1 && !isBech32m) {
-    return failure('Version 1+ must use Bech32m encoding');
+    return failure(
+      ValidationErrorCodes.INVALID_ENCODING,
+      'Version 1+ must use Bech32m encoding'
+    );
   }
 
   const programWords = decoded.words.slice(1);
   const programBytes = fromWordsUnsafe(programWords);
   if (!programBytes) {
-    return failure('Invalid witness program padding (non-zero padding bits)');
+    return failure(
+      ValidationErrorCodes.INVALID_FORMAT,
+      'Invalid witness program padding (non-zero padding bits)'
+    );
   }
 
   if (
@@ -110,6 +138,7 @@ function validateBech32(
     programBytes.length !== 32
   ) {
     return failure(
+      ValidationErrorCodes.INVALID_LENGTH,
       'Invalid witness program length for version 0 (must be 20 or 32 bytes)'
     );
   }
@@ -120,13 +149,11 @@ function validateBech32(
 function validateBase58(
   address: string,
   {success, failure}: ValidationContext
-) {
-  const result = base58Check(address, {
-    codec: base58,
-  });
+): BTCValidationResult {
+  const result = base58Check(address, {codec: base58});
 
   if (!result.isValid) {
-    return failure(result.error);
+    return failure(mapBase58CheckError(result.code), result.message);
   }
 
   // Mainnet version bytes: P2PKH=0x00 (1...), P2SH=0x05 (3...)
@@ -134,11 +161,15 @@ function validateBase58(
   const isP2SH = result.version === 0x05;
 
   if (!isP2PKH && !isP2SH) {
-    return failure('Unsupported Bitcoin address version');
+    return failure(
+      ValidationErrorCodes.UNSUPPORTED_TYPE,
+      'Unsupported Bitcoin address version'
+    );
   }
 
   if (result.payload.length !== 20) {
     return failure(
+      ValidationErrorCodes.INVALID_LENGTH,
       'Invalid public key hash or script hash length (must be 20 bytes)'
     );
   }

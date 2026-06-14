@@ -1,6 +1,7 @@
 import {describe, it, expect} from 'vite-plus/test';
 
 import {validateLTC} from '../src/chains/ltc';
+import {ValidationErrorCodes} from '../src/constants';
 
 describe('validateLTC', () => {
   describe('positive cases (valid mainnet)', () => {
@@ -40,27 +41,39 @@ describe('validateLTC', () => {
   describe('negative cases (invalid Base58)', () => {
     it('fails on invalid characters (0, O, I, l)', () => {
       const invalid = 'LbgJgM5YnLzP6M5Wq5V6yYZLqVq5V6yYZLqO'; // O instead of V
-      expect(validateLTC(invalid).isValid).toBe(false);
+      const result = validateLTC(invalid);
+      expect(result.isValid).toBe(false);
+      if (!result.isValid) {
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_ENCODING);
+      }
     });
 
     it('fails on Base58 checksum mismatch', () => {
       const invalid = 'LbgJgM5YnLzP6M5Wq5V6yYZLqVq5V6yYZLqF'; // last char changed
       const result = validateLTC(invalid);
       expect(result.isValid).toBe(false);
-      if (!result.isValid) expect(result.error).toContain('Checksum mismatch');
+      if (!result.isValid) {
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_CHECKSUM);
+        expect(result.message).toContain('Checksum mismatch');
+      }
     });
 
     it('fails on incorrect payload length', () => {
       const short = 'LbgJgM5YnLzP6M5Wq5V6yYZLqVq5V6yY'; // truncated
-      expect(validateLTC(short).isValid).toBe(false);
+      const result = validateLTC(short);
+      expect(result.isValid).toBe(false);
+      if (!result.isValid) {
+        expect(result.code).toMatch(/INVALID_CHECKSUM|INVALID_LENGTH/);
+      }
     });
 
     it('fails on unsupported version byte (Bitcoin address)', () => {
       const btcAddress = '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa';
       const result = validateLTC(btcAddress);
       expect(result.isValid).toBe(false);
-      if (!result.isValid)
-        expect(result.error).toMatch(/Unsupported address format/);
+      if (!result.isValid) {
+        expect(result.code).toBe(ValidationErrorCodes.UNSUPPORTED_TYPE);
+      }
     });
   });
 
@@ -69,43 +82,58 @@ describe('validateLTC', () => {
       const mixed = 'ltc1qW508d6qejxtdg4y5r3zarvary0C5xw7kv8f3t4';
       const result = validateLTC(mixed);
       expect(result.isValid).toBe(false);
-      if (!result.isValid) expect(result.error).toContain('Mixed case');
+      if (!result.isValid) {
+        expect(result.code).toBe(ValidationErrorCodes.MIXED_CASE);
+        expect(result.message).toContain('Mixed case');
+      }
     });
 
     it('fails on invalid HRP (bc1)', () => {
       const bcAddress = 'bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4';
       const result = validateLTC(bcAddress);
       expect(result.isValid).toBe(false);
-      if (!result.isValid)
-        expect(result.error).toMatch(/Unsupported address format/);
+      if (!result.isValid) {
+        expect(result.code).toBe(ValidationErrorCodes.UNSUPPORTED_TYPE);
+      }
     });
 
     it('fails on invalid checksum', () => {
       const invalid = 'ltc1qyl0g7j3ew5czqzyjrxcth5p5u6hx0p2g5y2z2b';
       const result = validateLTC(invalid);
       expect(result.isValid).toBe(false);
-      if (!result.isValid) expect(result.error).toContain('checksum');
+      if (!result.isValid) {
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_CHECKSUM);
+        expect(result.message).toContain('checksum');
+      }
     });
 
     it('fails on encoding-version mismatch (v1 with Bech32)', () => {
       const malformed =
         'ltc1pqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqhc79vu';
-
       const result = validateLTC(malformed);
       expect(result.isValid).toBe(false);
-      if (!result.isValid)
-        expect(result.error).toMatch(/Version 1\+ must use Bech32m/);
+      if (!result.isValid) {
+        expect(result.code).toMatch(/INVALID_CHECKSUM|INVALID_ENCODING/);
+      }
     });
   });
 
   describe('edge cases', () => {
     it('handles unsupported prefixes', () => {
-      expect(validateLTC('random_string').isValid).toBe(false);
+      const result = validateLTC('random_string');
+      expect(result.isValid).toBe(false);
+      if (!result.isValid) {
+        expect(result.code).toBe(ValidationErrorCodes.UNSUPPORTED_TYPE);
+      }
     });
 
     it('handles extremely long strings gracefully', () => {
       const long = 'ltc1' + 'q'.repeat(200);
-      expect(validateLTC(long).isValid).toBe(false);
+      const result = validateLTC(long);
+      expect(result.isValid).toBe(false);
+      if (!result.isValid) {
+        expect(result.code).toBeDefined();
+      }
     });
   });
 });

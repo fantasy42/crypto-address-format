@@ -4,6 +4,7 @@ import {describe, it, expect} from 'vite-plus/test';
 
 import {batch} from '../batch';
 import {createValidator} from '../createValidator';
+import {ValidationErrorCodes} from '../../constants';
 
 const okValidator = createValidator<ValidationResult<'Ok'>>((address) => ({
   isValid: true,
@@ -12,14 +13,17 @@ const okValidator = createValidator<ValidationResult<'Ok'>>((address) => ({
 }));
 
 const failValidator = createValidator<ValidationResult<'Fail'>>((_, ctx) =>
-  ctx.failure('always invalid')
+  ctx.failure(ValidationErrorCodes.UNSUPPORTED_TYPE, 'always invalid')
 );
 
 const conditionalValidator = createValidator<ValidationResult<'Cond'>>(
   (address, ctx) =>
     address === 'valid'
       ? {isValid: true, type: 'Cond', address}
-      : ctx.failure(`unexpected: ${address}`)
+      : ctx.failure(
+          ValidationErrorCodes.INVALID_FORMAT,
+          `unexpected: ${address}`
+        )
 );
 
 const throwingValidator = createValidator<ValidationResult<'Throw'>>(() => {
@@ -29,7 +33,8 @@ const throwingValidator = createValidator<ValidationResult<'Throw'>>(() => {
 const normalizingValidator = createValidator<ValidationResult<'Norm'>>(
   (address, ctx) => {
     const trimmed = address.trim();
-    if (trimmed.length === 0) return ctx.failure('empty');
+    if (trimmed.length === 0)
+      return ctx.failure(ValidationErrorCodes.EMPTY, 'empty');
     return {isValid: true, type: 'Norm', address: trimmed.toLowerCase()};
   }
 );
@@ -84,7 +89,8 @@ describe('batch', () => {
       results.forEach((r) => {
         expect(r.isValid).toBe(false);
         if (!r.isValid) {
-          expect(r.error).toBe('always invalid');
+          expect(r.code).toBe(ValidationErrorCodes.UNSUPPORTED_TYPE);
+          expect(r.message).toBe('always invalid');
         }
       });
     });
@@ -93,7 +99,8 @@ describe('batch', () => {
       const results = batch(throwingValidator, ['item']);
       expect(results[0].isValid).toBe(false);
       if (!results[0].isValid) {
-        expect(results[0].error).toMatch(/internal crash/);
+        expect(results[0].code).toBe(ValidationErrorCodes.INTERNAL_ERROR);
+        expect(results[0].message).toMatch(/internal crash/);
       }
     });
 
@@ -111,11 +118,12 @@ describe('batch', () => {
       expect(results[2].isValid).toBe(true);
     });
 
-    it('preserves error messages from failed items', () => {
+    it('preserves error codes and messages from failed items', () => {
       const results = batch(conditionalValidator, ['valid', 'invalid1']);
       expect(results[1].isValid).toBe(false);
       if (!results[1].isValid) {
-        expect(results[1].error).toContain('unexpected');
+        expect(results[1].code).toBe(ValidationErrorCodes.INVALID_FORMAT);
+        expect(results[1].message).toContain('unexpected');
       }
     });
   });
@@ -169,8 +177,11 @@ describe('batch', () => {
         expect(_type).toBe('Ok');
         expect(_address).toBe('x');
       } else {
-        const _error: string = result.error;
-        expect(_error).toBeTruthy();
+        // Now this branch would contain code + message
+        const _code = result.code;
+        const _message = result.message;
+        expect(_code).toBeTruthy();
+        expect(_message).toBeTruthy();
       }
     });
 
@@ -178,7 +189,8 @@ describe('batch', () => {
       const results = batch(conditionalValidator, ['invalid']);
       const result = results[0];
       if (!result.isValid) {
-        expect(result.error).toContain('unexpected');
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_FORMAT);
+        expect(result.message).toContain('unexpected');
         expect(result.original).toBe('invalid');
       }
     });
@@ -187,7 +199,8 @@ describe('batch', () => {
       const results = batch(okValidator, ['']);
       expect(results[0].isValid).toBe(false);
       if (!results[0].isValid) {
-        expect(results[0].error).toMatch(/empty|invalid/i);
+        expect(results[0].code).toBe(ValidationErrorCodes.EMPTY);
+        expect(results[0].message).toMatch(/empty|invalid/i);
       }
     });
 
@@ -195,7 +208,8 @@ describe('batch', () => {
       const results = batch(okValidator, ['   ']);
       expect(results[0].isValid).toBe(false);
       if (!results[0].isValid) {
-        expect(results[0].error).toMatch(/empty|invalid/i);
+        expect(results[0].code).toBe(ValidationErrorCodes.EMPTY);
+        expect(results[0].message).toMatch(/empty|invalid/i);
       }
     });
 
@@ -204,7 +218,8 @@ describe('batch', () => {
       const results = batch(okValidator, [longAddress]);
       expect(results[0].isValid).toBe(false);
       if (!results[0].isValid) {
-        expect(results[0].error).toMatch(/too long|256/i);
+        expect(results[0].code).toBe(ValidationErrorCodes.TOO_LONG);
+        expect(results[0].message).toMatch(/maximum length|256/i);
       }
     });
 
@@ -213,6 +228,9 @@ describe('batch', () => {
       expect(() => batch(okValidator, items)).not.toThrow();
       const results = batch(okValidator, items);
       expect(results[0].isValid).toBe(false);
+      if (!results[0].isValid) {
+        expect(results[0].code).toBe(ValidationErrorCodes.EMPTY);
+      }
     });
 
     it('handles null/undefined in BatchItem gracefully', () => {

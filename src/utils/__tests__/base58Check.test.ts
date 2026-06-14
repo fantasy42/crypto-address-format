@@ -1,7 +1,7 @@
 import {describe, it, expect} from 'vite-plus/test';
 import {sha256} from '@noble/hashes/sha2.js';
 
-import {base58Check} from '../base58Check';
+import {base58Check, Base58CheckErrorCode} from '../base58Check';
 import {base58, base58Xrp} from '../base58';
 import {createBaseCodec} from '../baseCodec';
 
@@ -102,7 +102,8 @@ describe('base58Check', () => {
       const result = base58Check(corrupted, {codec: base58});
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
-        expect(result.error).toContain('Checksum mismatch');
+        expect(result.code).toBe(Base58CheckErrorCode.CHECKSUM_MISMATCH);
+        expect(result.message).toContain('Checksum mismatch');
       }
     });
 
@@ -118,7 +119,8 @@ describe('base58Check', () => {
       });
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
-        expect(result.error).toContain('Version mismatch');
+        expect(result.code).toBe(Base58CheckErrorCode.VERSION_MISMATCH);
+        expect(result.message).toContain('Version mismatch');
       }
     });
 
@@ -126,7 +128,8 @@ describe('base58Check', () => {
       const result = base58Check('0OIl', {codec: base58});
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
-        expect(result.error).toContain('Invalid Base58 encoding');
+        expect(result.code).toBe(Base58CheckErrorCode.INVALID_ENCODING);
+        expect(result.message).toContain('Invalid Base58 encoding');
       }
     });
 
@@ -137,7 +140,8 @@ describe('base58Check', () => {
       const result = base58Check(addr, {codec: base58});
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
-        expect(result.error).toContain('Payload too short');
+        expect(result.code).toBe(Base58CheckErrorCode.PAYLOAD_TOO_SHORT);
+        expect(result.message).toContain('Payload too short');
       }
     });
   });

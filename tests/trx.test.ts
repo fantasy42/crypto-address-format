@@ -1,6 +1,7 @@
 import {describe, it, expect} from 'vite-plus/test';
 
 import {validateTRX} from '../src/chains/trx';
+import {ValidationErrorCodes} from '../src/constants';
 
 describe('validatetrx', () => {
   describe('positive cases (valid mainnet)', () => {
@@ -29,6 +30,9 @@ describe('validatetrx', () => {
       const result = validateTRX('T7z5Tf9jj1k2a4VZqL4mKjD6CZ1ePZa1wO'); // 'O' instead of '6'
 
       expect(result.isValid).toBe(false);
+      if (!result.isValid) {
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_ENCODING);
+      }
     });
 
     it('fails on base58 checksum mismatch', () => {
@@ -36,9 +40,9 @@ describe('validatetrx', () => {
       const result = validateTRX('T7z5Tf9jj1k2a4VZqL4mKjD6CZ1ePZa1w7');
 
       expect(result.isValid).toBe(false);
-
       if (!result.isValid) {
-        expect(result.error).toContain('Checksum mismatch');
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_CHECKSUM);
+        expect(result.message).toContain('Checksum mismatch');
       }
     });
 
@@ -46,9 +50,9 @@ describe('validatetrx', () => {
       const result = validateTRX('T7z5Tf9jj1k2a4VZqL4mKjD6CZ1ePZa1'); // Too short
 
       expect(result.isValid).toBe(false);
-
       if (!result.isValid) {
-        expect(result.error).toContain('length');
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_LENGTH);
+        expect(result.message).toContain('length');
       }
     });
 
@@ -58,20 +62,25 @@ describe('validatetrx', () => {
       const result = validateTRX('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa');
 
       expect(result.isValid).toBe(false);
-
       if (!result.isValid) {
-        // Our utility provides specific version error messages
-        expect(result.error).toContain('prefix');
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_PREFIX);
       }
     });
   });
 
   describe('edge cases', () => {
     it('handles unexpected formats', () => {
-      expect(validateTRX('ethereum_style_0x123...').isValid).toBe(false);
-      expect(
-        validateTRX('bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4').isValid
-      ).toBe(false);
+      const r1 = validateTRX('ethereum_style_0x123...');
+      expect(r1.isValid).toBe(false);
+      if (!r1.isValid) {
+        expect(r1.code).toBe(ValidationErrorCodes.INVALID_PREFIX);
+      }
+
+      const r2 = validateTRX('bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4');
+      expect(r2.isValid).toBe(false);
+      if (!r2.isValid) {
+        expect(r2.code).toBe(ValidationErrorCodes.INVALID_PREFIX);
+      }
     });
   });
 });

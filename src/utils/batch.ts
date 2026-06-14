@@ -40,7 +40,12 @@ export function batch<T extends string>(
       };
     }
 
-    return {...base, isValid: false, error: result.error};
+    return {
+      ...base,
+      isValid: false,
+      code: result.code,
+      message: result.message,
+    };
   });
 }
 

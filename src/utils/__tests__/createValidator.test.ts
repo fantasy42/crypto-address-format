@@ -4,6 +4,7 @@ import type {ValidationResult} from '../../types';
 import {describe, it, expect, vi} from 'vite-plus/test';
 
 import {createValidator} from '../createValidator';
+import {ValidationErrorCodes} from '../../constants';
 
 describe('createValidator factory', () => {
   describe('base input validation (enforced by factory)', () => {
@@ -34,7 +35,10 @@ describe('createValidator factory', () => {
         expect(result.isValid).toBe(false);
         assertResultShape(result);
         if (!result.isValid) {
-          expect(result.error).toContain('Address must be a non-empty string');
+          expect(result.code).toBe(ValidationErrorCodes.NULL_OR_UNDEFINED);
+          expect(result.message).toContain(
+            'Address must be a non‑empty string'
+          );
         }
       }
     );
@@ -46,7 +50,8 @@ describe('createValidator factory', () => {
         expect(result.isValid).toBe(false);
         assertResultShape(result);
         if (!result.isValid) {
-          expect(result.error).toContain('empty or whitespace');
+          expect(result.code).toBe(ValidationErrorCodes.EMPTY);
+          expect(result.message).toContain('empty or whitespace');
         }
       }
     );
@@ -59,6 +64,10 @@ describe('createValidator factory', () => {
       const result = safeValidate(alwaysSuccessValidator, coercer);
       expect(result.isValid).toBe(false);
       assertResultShape(result);
+      if (!result.isValid) {
+        expect(result.code).toBe(ValidationErrorCodes.NULL_OR_UNDEFINED);
+        expect(result.message).toContain('non‑empty');
+      }
     });
 
     it('should fail safely on extremely long strings', () => {
@@ -67,7 +76,8 @@ describe('createValidator factory', () => {
       expect(result.isValid).toBe(false);
       assertResultShape(result);
       if (!result.isValid) {
-        expect(result.error).toContain('maximum length');
+        expect(result.code).toBe(ValidationErrorCodes.TOO_LONG);
+        expect(result.message).toContain('maximum length');
       }
     });
 
@@ -78,7 +88,8 @@ describe('createValidator factory', () => {
         expect(result.isValid).toBe(false);
         assertResultShape(result);
         if (!result.isValid) {
-          expect(result.error).toContain('invalid characters');
+          expect(result.code).toBe(ValidationErrorCodes.INVALID_CHARACTERS);
+          expect(result.message).toContain('invalid characters');
         }
       }
     );
@@ -90,7 +101,8 @@ describe('createValidator factory', () => {
       expect(result.isValid).toBe(false);
       assertResultShape(result);
       if (!result.isValid) {
-        expect(result.error).toMatch(/Internal Error: boom/);
+        expect(result.code).toBe(ValidationErrorCodes.INTERNAL_ERROR);
+        expect(result.message).toMatch(/Internal Error: boom/);
       }
     });
 
@@ -128,7 +140,10 @@ function assertResultShape(result: ValidationResult<any>) {
   if (result.isValid) {
     expect(result).toHaveProperty('type');
   } else {
-    expect(result).toHaveProperty('error');
-    expect(typeof result.error).toBe('string');
+    // Updated assertions: failure shape is { code, message }
+    expect(result).toHaveProperty('code');
+    expect(typeof result.code).toBe('string');
+    expect(result).toHaveProperty('message');
+    expect(typeof result.message).toBe('string');
   }
 }

@@ -1,14 +1,17 @@
+import type {ValidationErrorCodes} from './constants';
+
 /**
  * Discriminated union for validation outcomes.
  *
  * - `isValid: true` → successful validation with normalized address and detected type.
- * - `isValid: false` → validation failed with an error message.
+ * - `isValid: false` → validation failed with a machine-readable `code` and a
+ *   human-readable `message`.
  *
- * @template T - The detected address type (e.g., `'Bech32'`, `'Ethereum'`).
+ * @template T - The detected address type (e.g. `'Bech32'`, `'P2PKH'`, `'Ethereum'`).
  */
 export type ValidationResult<T extends string = string> =
   | {isValid: true; type: T; address: string}
-  | {isValid: false; error: string};
+  | {isValid: false; code: ValidationErrorCode; message: string};
 
 /**
  * A batch validation input.
@@ -25,7 +28,8 @@ export type BatchItem = string | {address: string; id?: string | number};
  * in the input array, and an optional tracking `id`.
  *
  * - When `isValid` is `true`, contains the normalized address and detected type.
- * - When `isValid` is `false`, contains an error message.
+ * - When `isValid` is `false`, contains a machine‑readable `code` and a
+ *   human‑readable `message`.
  *
  * @template T - The detected address type (e.g., `'Bech32'`, `'Ethereum'`).
  */
@@ -41,3 +45,11 @@ export type BatchValidationResult<T extends string = string> =
       index: number;
       id?: string | number;
     });
+
+/**
+ * Union of all possible validation error codes.
+ *
+ * @see {@link ValidationErrorCodes} for the full list and descriptions.
+ */
+export type ValidationErrorCode =
+  (typeof ValidationErrorCodes)[keyof typeof ValidationErrorCodes];

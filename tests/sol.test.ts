@@ -1,6 +1,7 @@
 import {describe, it, expect} from 'vite-plus/test';
 
 import {validateSOL} from '../src/chains/sol';
+import {ValidationErrorCodes} from '../src/constants';
 
 describe('validateSOL', () => {
   describe('positive cases (valid mainnet)', () => {
@@ -21,18 +22,36 @@ describe('validateSOL', () => {
 
   describe('negative cases (invalid format)', () => {
     it('rejects too short or too long strings', () => {
-      expect(
-        validateSOL('7EcDhSYGxXyscszYEp35KHN8vvw3svAuLKTzXwCFLt').isValid
-      ).toBe(false);
+      const short = validateSOL('7EcDhSYGxXyscszYEp35KHN8vvw3svAuLKTzXwCFLt');
+      expect(short.isValid).toBe(false);
+      if (!short.isValid) {
+        expect(short.code).toBe(ValidationErrorCodes.INVALID_FORMAT);
+        expect(short.message).toContain('32 bytes');
+      }
+
       const long = '7EcDhSYGxXyscszYEp35KHN8vvw3svAuLKTzXwCFLtVaa';
-      expect(validateSOL(long).isValid).toBe(false);
+      const longResult = validateSOL(long);
+      expect(longResult.isValid).toBe(false);
+      if (!longResult.isValid) {
+        expect(longResult.code).toBe(ValidationErrorCodes.INVALID_LENGTH);
+      }
     });
 
     it('rejects invalid Base58 characters (0, O, I, l)', () => {
-      expect(
-        validateSOL('0EcDhSYGxXyscszYEp35KHN8vvw3svAuLKTzXwCFLtV').isValid
-      ).toBe(false);
-      expect(validateSOL('OIinvaliD').isValid).toBe(false);
+      const withZero = validateSOL(
+        '0EcDhSYGxXyscszYEp35KHN8vvw3svAuLKTzXwCFLtV'
+      );
+      expect(withZero.isValid).toBe(false);
+      if (!withZero.isValid) {
+        expect(withZero.code).toBe(ValidationErrorCodes.INVALID_ENCODING);
+        expect(withZero.message).toContain('Base58');
+      }
+
+      const withOI = validateSOL('OIinvaliD');
+      expect(withOI.isValid).toBe(false);
+      if (!withOI.isValid) {
+        expect(withOI.code).toBe(ValidationErrorCodes.INVALID_LENGTH);
+      }
     });
 
     it('rejects valid Base58 but wrong decoded length', () => {
@@ -40,7 +59,8 @@ describe('validateSOL', () => {
       const result = validateSOL(shortKey);
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
-        expect(result.error).toMatch(/32 bytes/);
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_FORMAT);
+        expect(result.message).toContain('32 bytes');
       }
     });
 
@@ -49,7 +69,8 @@ describe('validateSOL', () => {
       const result = validateSOL(shortKey);
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
-        expect(result.error).toMatch(/exactly 32 bytes/);
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_FORMAT);
+        expect(result.message).toContain('exactly 32 bytes');
       }
     });
 
@@ -58,6 +79,9 @@ describe('validateSOL', () => {
         '7EcDhSYGxXyscszYEp35KHN8vvw3 svAuLKTzXwCFLtV'
       );
       expect(result.isValid).toBe(false);
+      if (!result.isValid) {
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_ENCODING);
+      }
     });
   });
 });

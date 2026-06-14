@@ -5,6 +5,7 @@ import {describe, it, expect} from 'vite-plus/test';
 import {batch} from '../batch';
 import {createBatchValidator} from '../createBatchValidator';
 import {createValidator} from '../createValidator';
+import {ValidationErrorCodes} from '../../constants';
 
 const okValidator = createValidator<ValidationResult<'Ok'>>((address) => ({
   isValid: true,
@@ -13,7 +14,7 @@ const okValidator = createValidator<ValidationResult<'Ok'>>((address) => ({
 }));
 
 const failValidator = createValidator<ValidationResult<'Fail'>>((_, ctx) =>
-  ctx.failure('always invalid')
+  ctx.failure(ValidationErrorCodes.UNSUPPORTED_TYPE, 'always invalid')
 );
 
 describe('createBatchValidator', () => {
@@ -34,7 +35,8 @@ describe('createBatchValidator', () => {
     const results = batchFn(['x']);
     expect(results[0].isValid).toBe(false);
     if (!results[0].isValid) {
-      expect(results[0].error).toBe('always invalid');
+      expect(results[0].code).toBe(ValidationErrorCodes.UNSUPPORTED_TYPE);
+      expect(results[0].message).toBe('always invalid');
     }
   });
 

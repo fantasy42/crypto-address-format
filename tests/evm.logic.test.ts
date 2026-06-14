@@ -2,6 +2,7 @@ import {describe, it, expect} from 'vite-plus/test';
 
 import {createValidator} from '../src/utils/createValidator';
 import {getEVMLogic} from '../src/utils/evm';
+import {ValidationErrorCodes} from '../src/constants';
 
 const validateGenericEVM = createValidator(getEVMLogic('GenericEVM'));
 
@@ -51,7 +52,8 @@ describe('EVM Logic validation (getEVMLogic)', () => {
       );
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
-        expect(result.error).toContain('checksum');
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_CHECKSUM);
+        expect(result.message).toContain('checksum');
       }
     });
 
@@ -61,7 +63,8 @@ describe('EVM Logic validation (getEVMLogic)', () => {
       );
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
-        expect(result.error).toContain('hexadecimal');
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_FORMAT);
+        expect(result.message).toContain('hexadecimal');
       }
     });
 
@@ -72,7 +75,8 @@ describe('EVM Logic validation (getEVMLogic)', () => {
         const result = validateGenericEVM(addr);
         expect(result.isValid).toBe(false);
         if (!result.isValid) {
-          expect(result.error).toContain('length');
+          expect(result.code).toBe(ValidationErrorCodes.INVALID_LENGTH);
+          expect(result.message).toContain('length');
         }
       });
     });
@@ -84,7 +88,8 @@ describe('EVM Logic validation (getEVMLogic)', () => {
         const result = validateGenericEVM(addr);
         expect(result.isValid).toBe(false);
         if (!result.isValid) {
-          expect(result.error).toContain('prefix');
+          expect(result.code).toBe(ValidationErrorCodes.INVALID_PREFIX);
+          expect(result.message).toContain('prefix');
         }
       });
     });
@@ -94,7 +99,8 @@ describe('EVM Logic validation (getEVMLogic)', () => {
       const result = validateGenericEVM(specialChar);
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
-        expect(result.error).toContain('hexadecimal');
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_FORMAT);
+        expect(result.message).toContain('hexadecimal');
       }
     });
 
@@ -103,7 +109,8 @@ describe('EVM Logic validation (getEVMLogic)', () => {
       const result = validateGenericEVM(addr);
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
-        expect(result.error).toContain('checksum');
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_CHECKSUM);
+        expect(result.message).toContain('checksum');
       }
     });
   });

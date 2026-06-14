@@ -3,6 +3,7 @@ import type {ValidationResult} from '../types';
 import {base58} from '../utils/base58';
 import {createBatchValidator} from '../utils/createBatchValidator';
 import {createValidator} from '../utils/createValidator';
+import {ValidationErrorCodes} from '../constants';
 
 /**
  * Supported Solana address categories.
@@ -29,17 +30,24 @@ export const validateSOL = createValidator<SOLValidationResult>(
   (address, context): SOLValidationResult => {
     if (address.length < 32 || address.length > 44) {
       return context.failure(
+        ValidationErrorCodes.INVALID_LENGTH,
         'Invalid address length (expected 32-44 characters)'
       );
     }
 
     const decoded = base58.decodeUnsafe(address);
     if (!decoded) {
-      return context.failure('Invalid Base58 encoding');
+      return context.failure(
+        ValidationErrorCodes.INVALID_ENCODING,
+        'Invalid Base58 encoding'
+      );
     }
 
     if (decoded.length !== 32) {
-      return context.failure('Decoded public key must be exactly 32 bytes');
+      return context.failure(
+        ValidationErrorCodes.INVALID_FORMAT,
+        'Decoded public key must be exactly 32 bytes'
+      );
     }
 
     return context.success('Solana', address);

@@ -2,6 +2,7 @@ import {describe, it, expect} from 'vite-plus/test';
 
 import {validateBTC} from '../src/chains/btc';
 import {bech32, bech32m} from '../src/utils/bech32';
+import {ValidationErrorCodes} from '../src/constants';
 
 describe('validateBTC', () => {
   describe('positive cases (valid mainnet)', () => {
@@ -44,19 +45,26 @@ describe('validateBTC', () => {
     it('fails on invalid characters (0, o, i, l)', () => {
       const result = validateBTC('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNO');
       expect(result.isValid).toBe(false);
+      if (!result.isValid) {
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_ENCODING);
+      }
     });
 
     it('fails on base58 checksum mismatch', () => {
       const result = validateBTC('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNb');
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
-        expect(result.error).toContain('Checksum mismatch');
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_CHECKSUM);
+        expect(result.message).toContain('Checksum mismatch');
       }
     });
 
-    it('fails on incorrect payload length', () => {
+    it('fails on incorrect payload length (truncated address causes checksum error)', () => {
       const result = validateBTC('1A1zP1eP5QGefi2DMPTfTL5SLmv7Divf');
       expect(result.isValid).toBe(false);
+      if (!result.isValid) {
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_CHECKSUM);
+      }
     });
   });
 
@@ -65,7 +73,8 @@ describe('validateBTC', () => {
       const result = validateBTC('bc1qW508d6qejxtdg4y5r3zarvary0C5xw7kv8f3t4');
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
-        expect(result.error).toContain('Mixed case');
+        expect(result.code).toBe(ValidationErrorCodes.MIXED_CASE);
+        expect(result.message).toContain('Mixed case');
       }
     });
 
@@ -75,42 +84,56 @@ describe('validateBTC', () => {
       );
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
-        expect(result.error).toContain('checksum');
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_CHECKSUM);
+        expect(result.message).toContain('checksum');
       }
     });
 
     it('fails on encoding-version mismatch (bip350 enforcement)', () => {
-      const v1WithBech32 = 'bc1p0xlxvl9ghp0g64p66llp95m4mg6u00cd677ntn6qyc2c';
+      const words = [1, ...Array.from({length: 32}, () => 0)];
+      const v1WithBech32 = bech32.encode('bc', words);
       const result = validateBTC(v1WithBech32);
       expect(result.isValid).toBe(false);
+      if (!result.isValid) {
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_ENCODING);
+      }
     });
 
     it('fails on v0 with Bech32m encoding', () => {
-      const words = [0, ...Array.from({length: 32}, () => 0)]; // 32 words = 20 bytes
+      const words = [0, ...Array.from({length: 32}, () => 0)];
       const v0Bech32m = bech32m.encode('bc', words);
       const result = validateBTC(v0Bech32m);
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
-        expect(result.error).toMatch(/Version 0 must use Bech32/);
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_ENCODING);
+        expect(result.message).toMatch(/Version 0 must use Bech32/);
       }
     });
 
     it('fails on missing witness version', () => {
-      const noData = bech32.encode('bc', []); // valid Bech32 with empty data
+      const noData = bech32.encode('bc', []);
       const result = validateBTC(noData);
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
-        expect(result.error).toMatch(/Missing witness version/);
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_FORMAT);
+        expect(result.message).toMatch(/Missing witness version/);
       }
     });
   });
 
   describe('edge cases', () => {
     it('handles unsupported prefixes', () => {
-      expect(validateBTC('4A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa').isValid).toBe(
-        false
-      );
-      expect(validateBTC('dogecoin_address').isValid).toBe(false);
+      const r1 = validateBTC('4A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa');
+      expect(r1.isValid).toBe(false);
+      if (!r1.isValid) {
+        expect(r1.code).toBe(ValidationErrorCodes.UNSUPPORTED_TYPE);
+      }
+
+      const r2 = validateBTC('dogecoin_address');
+      expect(r2.isValid).toBe(false);
+      if (!r2.isValid) {
+        expect(r2.code).toBe(ValidationErrorCodes.UNSUPPORTED_TYPE);
+      }
     });
   });
 });

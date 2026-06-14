@@ -3,6 +3,7 @@ import {describe, it, expect} from 'vite-plus/test';
 import {validateBNB} from '../src/chains/bnb';
 import {validateETH} from '../src/chains/eth';
 import {validatePolygon} from '../src/chains/polygon';
+import {ValidationErrorCodes} from '../src/constants';
 
 const evmChains = [
   {validate: validateETH, label: 'Ethereum'},
@@ -28,8 +29,9 @@ describe.each(evmChains)(
       const result = validate(brokenChecksum);
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
-        expect(result.error).toContain(label);
-        expect(result.error).toContain('checksum');
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_CHECKSUM);
+        expect(result.message).toContain(label);
+        expect(result.message).toContain('checksum');
       }
     });
   }

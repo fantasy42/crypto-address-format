@@ -1,6 +1,7 @@
 import {describe, it, expect} from 'vite-plus/test';
 
 import {validateXLM} from '../src/chains/xlm';
+import {ValidationErrorCodes} from '../src/constants';
 
 describe('validateXLM', () => {
   describe('positive cases (valid mainnet)', () => {
@@ -23,16 +24,21 @@ describe('validateXLM', () => {
 
   describe('negative cases (invalid format)', () => {
     it('rejects unsupported prefix (S, B, etc.)', () => {
-      expect(
-        validateXLM(
-          'SAAAAAAAAAAAAAB7BQ2L7E5NBWMXDUCMZSIPOBKRDSBYVLMXGFA5FSSUBWBK7H53A5OPM'
-        ).isValid
-      ).toBe(false);
-      expect(
-        validateXLM(
-          'BAAAAAAAAAAAAAB7BQ2L7E5NBWMXDUCMZSIPOBKRDSBYVLMXGFA5FSSUBWBK7H53A5OPM'
-        ).isValid
-      ).toBe(false);
+      const r1 = validateXLM(
+        'SAAAAAAAAAAAAAB7BQ2L7E5NBWMXDUCMZSIPOBKRDSBYVLMXGFA5FSSUBWBK7H53A5OPM'
+      );
+      expect(r1.isValid).toBe(false);
+      if (!r1.isValid) {
+        expect(r1.code).toBe(ValidationErrorCodes.INVALID_PREFIX);
+      }
+
+      const r2 = validateXLM(
+        'BAAAAAAAAAAAAAB7BQ2L7E5NBWMXDUCMZSIPOBKRDSBYVLMXGFA5FSSUBWBK7H53A5OPM'
+      );
+      expect(r2.isValid).toBe(false);
+      if (!r2.isValid) {
+        expect(r2.code).toBe(ValidationErrorCodes.INVALID_PREFIX);
+      }
     });
 
     it('rejects wrong length for G', () => {
@@ -40,6 +46,9 @@ describe('validateXLM', () => {
         'GA7FCCWP2YRFQWJ5M7BHBIXSMJJJBSUZWHCSVMRBXVTXM7RF4J6EUOJ'
       );
       expect(result.isValid).toBe(false);
+      if (!result.isValid) {
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_LENGTH);
+      }
     });
 
     it('rejects wrong length for M', () => {
@@ -47,6 +56,9 @@ describe('validateXLM', () => {
         'MAAAAAAAAAAAAAB7BQ2L7E5NBWMXDUCMZSIPOBKRDSBYVLMXGFA5FSSUBWBK7H53A5OP'
       );
       expect(result.isValid).toBe(false);
+      if (!result.isValid) {
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_LENGTH);
+      }
     });
 
     it('rejects invalid Base32 characters', () => {
@@ -55,7 +67,8 @@ describe('validateXLM', () => {
       );
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
-        expect(result.error).toContain('Base32');
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_ENCODING);
+        expect(result.message).toContain('Base32');
       }
     });
 
@@ -66,7 +79,8 @@ describe('validateXLM', () => {
       );
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
-        expect(result.error).toContain('Checksum mismatch');
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_CHECKSUM);
+        expect(result.message).toContain('Checksum mismatch');
       }
     });
   });

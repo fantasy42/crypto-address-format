@@ -2,6 +2,7 @@ import {describe, it, expect} from 'vite-plus/test';
 
 import {crc16Ton} from '../src/utils/crc16';
 import {validateTON} from '../src/chains/ton';
+import {ValidationErrorCodes} from '../src/constants';
 
 describe('validateton', () => {
   describe('positive cases (valid mainnet & testnet)', () => {
@@ -110,16 +111,20 @@ describe('validateton', () => {
       const result = validateTON(
         'ton://EQAs9VlT6S776tq3unJcP5Ogsj-ELLunLXuOb1EKcOQi4wJB'
       );
-
       expect(result.isValid).toBe(false);
+      if (!result.isValid) {
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_FORMAT);
+      }
     });
 
     it('fails on complex routing transaction transfers strings', () => {
       const result = validateTON(
         'ton://transfer/EQDXDCFLXgiTrjGSNVBuvKPZVYlPn3J_u96xxLas3_yoRWRk'
       );
-
       expect(result.isValid).toBe(false);
+      if (!result.isValid) {
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_FORMAT);
+      }
     });
 
     it('fails on user-friendly addresses with illegal lengths', () => {
@@ -128,6 +133,9 @@ describe('validateton', () => {
       );
 
       expect(result.isValid).toBe(false);
+      if (!result.isValid) {
+        expect(result.code).toBe(ValidationErrorCodes.UNSUPPORTED_TYPE);
+      }
     });
 
     it('fails on invalid arbitrary layout strings containing wildcards', () => {
@@ -136,6 +144,9 @@ describe('validateton', () => {
       );
 
       expect(result.isValid).toBe(false);
+      if (!result.isValid) {
+        expect(result.code).toBe(ValidationErrorCodes.UNSUPPORTED_TYPE);
+      }
     });
 
     it('fails on a valid-length address with a corrupted checksum', () => {
@@ -144,7 +155,8 @@ describe('validateton', () => {
       );
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
-        expect(result.error).toContain('checksum');
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_CHECKSUM);
+        expect(result.message).toContain('checksum');
       }
     });
 
@@ -161,7 +173,8 @@ describe('validateton', () => {
       const result = validateTON(badTagAddress);
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
-        expect(result.error).toContain('tag');
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_FORMAT);
+        expect(result.message).toContain('tag');
       }
     });
   });
@@ -173,6 +186,9 @@ describe('validateton', () => {
       );
 
       expect(result.isValid).toBe(false);
+      if (!result.isValid) {
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_FORMAT);
+      }
     });
 
     it('fails on extremely truncated raw hash contexts (length 62)', () => {
@@ -181,6 +197,9 @@ describe('validateton', () => {
       );
 
       expect(result.isValid).toBe(false);
+      if (!result.isValid) {
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_FORMAT);
+      }
     });
 
     it('fails if raw addresses hide functional user-friendly addresses inside payload values', () => {
@@ -189,15 +208,25 @@ describe('validateton', () => {
       );
 
       expect(result.isValid).toBe(false);
+      if (!result.isValid) {
+        expect(result.code).toBe(ValidationErrorCodes.INVALID_FORMAT);
+      }
     });
   });
 
   describe('edge cases', () => {
     it('handles unexpected structural formats safely', () => {
-      expect(validateTON('bitcoin_style_address').isValid).toBe(false);
-      expect(
-        validateTON('0x1234567890abcdef1234567890abcdef12345678').isValid
-      ).toBe(false);
+      const result1 = validateTON('bitcoin_style_address');
+      expect(result1.isValid).toBe(false);
+      if (!result1.isValid) {
+        expect(result1.code).toBe(ValidationErrorCodes.UNSUPPORTED_TYPE);
+      }
+
+      const result2 = validateTON('0x1234567890abcdef1234567890abcdef12345678');
+      expect(result2.isValid).toBe(false);
+      if (!result2.isValid) {
+        expect(result2.code).toBe(ValidationErrorCodes.UNSUPPORTED_TYPE);
+      }
     });
   });
 });

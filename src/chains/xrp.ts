@@ -1,9 +1,10 @@
 import type {ValidationResult} from '../types';
 
 import {base58Xrp} from '../utils/base58';
-import {base58Check} from '../utils/base58Check';
+import {base58Check, mapBase58CheckError} from '../utils/base58Check';
 import {createBatchValidator} from '../utils/createBatchValidator';
 import {createValidator} from '../utils/createValidator';
+import {ValidationErrorCodes} from '../constants';
 
 /**
  * Supported XRP Ledger address categories.
@@ -29,7 +30,10 @@ export const validateXRP = createValidator<XRPValidationResult>(
   (address, {failure, success}) => {
     if (address.startsWith('r')) {
       if (address.length < 25 || address.length > 35) {
-        return failure('Invalid Classic address length');
+        return failure(
+          ValidationErrorCodes.INVALID_LENGTH,
+          'Invalid Classic address length'
+        );
       }
 
       const res = base58Check(address, {
@@ -38,11 +42,14 @@ export const validateXRP = createValidator<XRPValidationResult>(
       });
 
       if (!res.isValid) {
-        return failure(res.error);
+        return failure(mapBase58CheckError(res.code), res.message);
       }
 
       if (res.payload.length !== 20) {
-        return failure('Invalid Classic address payload');
+        return failure(
+          ValidationErrorCodes.INVALID_LENGTH,
+          'Invalid Classic address payload'
+        );
       }
 
       return success('Classic', address);
@@ -50,7 +57,10 @@ export const validateXRP = createValidator<XRPValidationResult>(
 
     if (address.startsWith('X')) {
       if (address.length < 29 || address.length > 59) {
-        return failure('Invalid X-Address string length');
+        return failure(
+          ValidationErrorCodes.INVALID_LENGTH,
+          'Invalid X-Address string length'
+        );
       }
 
       const res = base58Check(address, {
@@ -59,17 +69,23 @@ export const validateXRP = createValidator<XRPValidationResult>(
       });
 
       if (!res.isValid) {
-        return failure(res.error);
+        return failure(mapBase58CheckError(res.code), res.message);
       }
 
       if (res.payload.length !== 29) {
-        return failure('Invalid X-Address payload structure');
+        return failure(
+          ValidationErrorCodes.INVALID_LENGTH,
+          'Invalid X-Address payload structure'
+        );
       }
 
       return success('X-Address-Mainnet', address);
     }
 
-    return failure('Unsupported XRP address prefix');
+    return failure(
+      ValidationErrorCodes.INVALID_PREFIX,
+      'Unsupported XRP address prefix'
+    );
   }
 );
 

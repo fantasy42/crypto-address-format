@@ -1,25 +1,57 @@
+import type {ValidationErrorCode} from '../types';
 import type {BaseCodec} from './baseCodec';
 
 import {sha256} from '@noble/hashes/sha2.js';
 
 import {compareBytes} from './compareBytes';
+import {ValidationErrorCodes} from '../constants';
+
+export const Base58CheckErrorCode = {
+  /** Decoded data is too short to contain a checksum. */
+  PAYLOAD_TOO_SHORT: 'PAYLOAD_TOO_SHORT',
+  /** The 4‑byte double‑SHA256 checksum does not match. */
+  CHECKSUM_MISMATCH: 'CHECKSUM_MISMATCH',
+  /** The leading version byte(s) do not match the expected value(s). */
+  VERSION_MISMATCH: 'VERSION_MISMATCH',
+  /** The string could not be decoded as Base58. */
+  INVALID_ENCODING: 'INVALID_ENCODING',
+} as const;
+
+export type Base58CheckErrorCode =
+  (typeof Base58CheckErrorCode)[keyof typeof Base58CheckErrorCode];
+
+/**
+ * Maps a low‑level Base58Check error code to a public,
+ * chain‑agnostic `ValidationErrorCode`.
+ *
+ * @param code - The internal error code from `base58Check`.
+ * @returns A matching public error code suitable for end‑user display.
+ */
+export function mapBase58CheckError(
+  code: Base58CheckErrorCode
+): ValidationErrorCode {
+  switch (code) {
+    case Base58CheckErrorCode.CHECKSUM_MISMATCH:
+      return ValidationErrorCodes.INVALID_CHECKSUM;
+    case Base58CheckErrorCode.PAYLOAD_TOO_SHORT:
+      return ValidationErrorCodes.INVALID_LENGTH;
+    case Base58CheckErrorCode.VERSION_MISMATCH:
+      return ValidationErrorCodes.INVALID_VERSION;
+    default:
+      return ValidationErrorCodes.INVALID_ENCODING;
+  }
+}
 
 /**
  * Possible result of a Base58Check validation.
  *
  * On success, provides the decoded payload, the leading version byte(s),
- * and a confirmation flag. On failure, it returns a descriptive error.
+ * and a confirmation flag. On failure, it returns an internal error code
+ * and a human‑readable message.
  */
 type Base58CheckResult =
-  | {
-      isValid: true;
-      version: number;
-      payload: Uint8Array;
-    }
-  | {
-      isValid: false;
-      error: string;
-    };
+  | {isValid: true; version: number; payload: Uint8Array}
+  | {isValid: false; code: Base58CheckErrorCode; message: string};
 
 /**
  * Options for {@link base58Check}.
@@ -57,7 +89,11 @@ export function base58Check(
 
     const decoded = codec.decode(address);
     if (decoded.length < 5) {
-      return {isValid: false, error: 'Payload too short'};
+      return {
+        isValid: false,
+        code: Base58CheckErrorCode.PAYLOAD_TOO_SHORT,
+        message: 'Payload too short',
+      };
     }
 
     // Separate version+payload from the trailing checksum
@@ -67,7 +103,11 @@ export function base58Check(
     const expectedChecksum = sha256(sha256(versionAndPayload)).subarray(0, 4);
 
     if (!compareBytes(checksum, expectedChecksum)) {
-      return {isValid: false, error: 'Checksum mismatch'};
+      return {
+        isValid: false,
+        code: Base58CheckErrorCode.CHECKSUM_MISMATCH,
+        message: 'Checksum mismatch',
+      };
     }
 
     // Determine which bytes are the version prefix
@@ -85,7 +125,11 @@ export function base58Check(
       const expectedBuffer = new Uint8Array(versionBytes);
 
       if (!compareBytes(actualVersion, expectedBuffer)) {
-        return {isValid: false, error: 'Version mismatch'};
+        return {
+          isValid: false,
+          code: Base58CheckErrorCode.VERSION_MISMATCH,
+          message: 'Version mismatch',
+        };
       }
     }
 
@@ -95,6 +139,10 @@ export function base58Check(
       payload: versionAndPayload.subarray(versionLength), // the remaining payload
     };
   } catch {
-    return {isValid: false, error: 'Invalid Base58 encoding'};
+    return {
+      isValid: false,
+      code: Base58CheckErrorCode.INVALID_ENCODING,
+      message: 'Invalid Base58 encoding',
+    };
   }
 }

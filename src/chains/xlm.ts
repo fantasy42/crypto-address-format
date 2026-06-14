@@ -4,6 +4,7 @@ import {decode, encode} from '../utils/base32';
 import {crc16xmodem} from '../utils/crc16';
 import {createBatchValidator} from '../utils/createBatchValidator';
 import {createValidator} from '../utils/createValidator';
+import {ValidationErrorCodes} from '../constants';
 
 /**
  * Supported Stellar address categories.
@@ -29,17 +30,20 @@ export const validateXLM = createValidator<XLMValidationResult>(
   (address, context): XLMValidationResult => {
     if (!address.startsWith('G') && !address.startsWith('M')) {
       return context.failure(
+        ValidationErrorCodes.INVALID_PREFIX,
         'Unsupported address format: must start with G or M'
       );
     }
 
     if (address.startsWith('G') && address.length !== 56) {
       return context.failure(
+        ValidationErrorCodes.INVALID_LENGTH,
         'Invalid length for standard address (expected 56 characters)'
       );
     }
     if (address.startsWith('M') && address.length !== 69) {
       return context.failure(
+        ValidationErrorCodes.INVALID_LENGTH,
         'Invalid length for muxed address (expected 69 characters)'
       );
     }
@@ -48,22 +52,34 @@ export const validateXLM = createValidator<XLMValidationResult>(
     try {
       decoded = decode(address);
     } catch {
-      return context.failure('Invalid Base32 encoding');
+      return context.failure(
+        ValidationErrorCodes.INVALID_ENCODING,
+        'Invalid Base32 encoding'
+      );
     }
 
     try {
       if (encode(decoded) !== address) {
-        return context.failure('Invalid Base32 encoding');
+        return context.failure(
+          ValidationErrorCodes.INVALID_ENCODING,
+          'Invalid Base32 encoding'
+        );
       }
     } catch {
-      return context.failure('Invalid Base32 encoding');
+      return context.failure(
+        ValidationErrorCodes.INVALID_ENCODING,
+        'Invalid Base32 encoding'
+      );
     }
 
     const expectedVersion = address.startsWith('G') ? 0x30 : 0x60; // G: 6<<3, M: 12<<3
     const expectedDataLength = address.startsWith('G') ? 32 : 40;
 
     if (decoded.length < 3) {
-      return context.failure('Decoded payload too short');
+      return context.failure(
+        ValidationErrorCodes.INVALID_LENGTH,
+        'Decoded payload too short'
+      );
     }
 
     const versionByte = decoded[0];
@@ -72,11 +88,17 @@ export const validateXLM = createValidator<XLMValidationResult>(
     const data = decoded.slice(1, -2);
 
     if (versionByte !== expectedVersion) {
-      return context.failure('Invalid version byte');
+      return context.failure(
+        ValidationErrorCodes.INVALID_VERSION,
+        'Invalid version byte'
+      );
     }
 
     if (data.length !== expectedDataLength) {
-      return context.failure('Invalid public key length');
+      return context.failure(
+        ValidationErrorCodes.INVALID_LENGTH,
+        'Invalid public key length'
+      );
     }
 
     const expectedChecksum = crc16xmodem(payload);
@@ -84,7 +106,10 @@ export const validateXLM = createValidator<XLMValidationResult>(
       expectedChecksum[0] !== checksum[0] ||
       expectedChecksum[1] !== checksum[1]
     ) {
-      return context.failure('Checksum mismatch');
+      return context.failure(
+        ValidationErrorCodes.INVALID_CHECKSUM,
+        'Checksum mismatch'
+      );
     }
 
     const type: StellarAddressType = address.startsWith('G')
