@@ -56,11 +56,11 @@ const results = validateETHBatch([
 ]);
 
 results.forEach((r) => {
-  // r.isValid, r.type, r.address, r.error, r.original, r.index, r.id
+  // r.isValid, r.type, r.address, r.code, r.message, r.original, r.index, r.id
 });
 ```
 
-Each result preserves the original trimmed input, its position in the array, and an optional `id` you supplied.
+Each result preserves the original trimmed input, its position, and an optional `id` you supplied.
 
 ### Modular Imports
 
@@ -70,6 +70,42 @@ All functions are available from the main entry point (`cryptovalid`). For minim
 - `cryptovalid/btc` – `validateBTC`, `validateBTCBatch`
 - `cryptovalid/usdt-bep20` – `validateUSDTBEP20`, `validateUSDTBEP20Batch`
 - (other chains follow the same pattern)
+
+### Error System
+
+Every failure result contains a **machine‑readable `code`** and a **human‑readable `message`**. The codes are chain‑agnostic and reused across all validators.
+
+#### Public API
+
+- `ValidationErrorCodes` — a constant object with all error codes.
+- `ValidationErrorCode` — the union type of all possible code string literals.
+- Both are exported from the main entry point.
+
+#### Internal mapping
+
+The `base58Check` utility returns its own internal error codes. The helper function `mapBase58CheckError` maps those internal codes to the public `ValidationErrorCodes`, so that chain validators only deal with the public set.
+
+When writing a new validator, use the factory's `failure(code, message)` method. The `code` must be one of the public constants.
+
+#### Available codes
+
+| Code                   | Meaning                                                                      |
+|------------------------|------------------------------------------------------------------------------|
+| `NULL_OR_UNDEFINED`    | Input was `null`, `undefined`, or not a string.                              |
+| `EMPTY`                | Address was empty or only whitespace.                                        |
+| `TOO_LONG`             | Address exceeds maximum length (256 chars).                                  |
+| `INVALID_CHARACTERS`   | Contains control or non‑printable characters.                                |
+| `INVALID_FORMAT`       | General format violation.                                                    |
+| `INVALID_PREFIX`       | Missing or invalid prefix.                                                   |
+| `INVALID_LENGTH`       | Wrong length for the address type.                                           |
+| `INVALID_CHECKSUM`     | Checksum verification failed (Bech32, Base58Check, EIP‑55, CRC16, etc.).     |
+| `INVALID_VERSION`      | Invalid version byte or witness version.                                     |
+| `INVALID_ENCODING`     | Invalid underlying encoding.                                                 |
+| `MIXED_CASE`           | Mixed case where single case is required.                                    |
+| `UNSUPPORTED_TYPE`     | Format not supported by this validator.                                      |
+| `INTERNAL_ERROR`       | Unexpected internal error.                                                   |
+
+See the project README for a usage example with `switch` statements.
 
 ## Project Structure
 
@@ -87,6 +123,7 @@ All functions are available from the main entry point (`cryptovalid`). For minim
 │   │   ├── base*.ts      # Encoding/decoding utils (Base32, Base58, etc.)
 │   │   └── [other_utils].ts
 │   │
+│   ├── constants.ts      # Public error codes and shared constants
 │   ├── index.ts          # Main entry point of the application/library
 │   └── types.ts          # Global TypeScript type definitions and interfaces
 │
@@ -100,13 +137,13 @@ This project uses **Vite+**, a unified toolchain built on top of Vite, Rolldown,
 
 Vite+ is distinct from Vite itself; it invokes Vite internally for commands like `vp dev` and `vp build`.
 
-| npm command               | Vite+ command            | Description                        |
-|---------------------------|--------------------------|------------------------------------|
-| `npm install`             | `vp install`             | Install dependencies               |
-| `npm run build`           | `vp run build`           | Build the library (output in `dist`) |
-| `npm test`                | `vp test`                | Run all tests                      |
-| `npm run lint & format`   | `vp check`               | Run Oxlint, Oxfmt, and type check  |
-| `npm run dev`             | `vp dev`                 | Start dev server (if applicable)   |
+| npm command               | Vite+ command            | Description                          |
+|---------------------------|--------------------------|--------------------------------------|
+| `npm install`             | `vp install`             | Install dependencies                 |
+| `npm run build`           | `vp pack`                | Build the library (output in `dist`) |
+| `npm test`                | `vp test`                | Run all tests                        |
+| `npm run lint & format`   | `vp check`               | Run Oxlint, Oxfmt, and type check    |
+| `npm run dev`             | `vp dev`                 | Start dev server (if applicable)     |
 
 1. Run `vp help` to print a list of commands.
 2. Run `vp <command> --help` for information about a specific command.
@@ -126,7 +163,8 @@ Vite+ is distinct from Vite itself; it invokes Vite internally for commands like
    Batch validators are created with `src/utils/createBatchValidator.ts` (a thin wrapper that applies a single‑address validator to an array of `BatchItem` objects). The factory already:
    - Trims the input.
    - Ensures the string is non‑empty, ≤256 chars, and contains only ASCII printable characters (codes 32–126).
-   - Catches synchronous exceptions and converts them to `ValidationResult` failures.
+   - Catches synchronous exceptions and converts them to a failure with `code` and `message`.
+   The `failure` helper requires a `code` from `ValidationErrorCodes` as the first argument.
 3. **Formatting Rules** – Enforced by `vp check`:
    - Semicolons required (`semi: true`)
    - Single quotes (`singleQuote: true`)
@@ -196,6 +234,7 @@ Vite+ is distinct from Vite itself; it invokes Vite internally for commands like
    - Positive cases (valid addresses of each type)
    - Negative cases (invalid length, wrong charset, checksum mismatch, wrong network)
    - Edge cases (empty string, whitespace‑only, maximum length, leading zero bytes, etc.)
+   - Tests must assert `result.code` and `result.message` on failure, not a plain `error` string.
 3. **CI Requirements**: The GitHub Actions CI pipeline runs `vp install`, `vp check`, and `vp test`. All PRs must pass these checks without errors.
 
 ## Security and reliability
@@ -205,7 +244,7 @@ Vite+ is distinct from Vite itself; it invokes Vite internally for commands like
    - Expanded test vectors (including known edge cases from reference implementations).
    - A clear explanation of why the change does not weaken validation.
 2. **Backward compatibility** – Validation logic must remain backward‑compatible. Adding a new address type is allowed; changing the validation of an existing type (e.g., suddenly rejecting previously valid addresses) requires a major version bump.
-3. **Error messages** – The error string in `ValidationResult` is descriptive and stable (intended for display to end users). It is not localized and will always be in English. Do not change error messages without a strong reason – downstream code may depend on string matching.
+3. **Error codes and messages** – Every failure returns a `code` from `ValidationErrorCodes` and a `message`. The `code` is stable and can be relied upon programmatically (for `switch` statements, logging, analytics). The `message` is intended for display to end users; it is in English and may evolve over time as wording improves. Do not remove or change the meaning of existing error codes without a major version bump.
 4. **Batch validation** – Batch functions reuse the same single‑address validation logic and therefore inherit all security and reliability guarantees. No additional risks are introduced.
 
 ## Contribution and pull requests
