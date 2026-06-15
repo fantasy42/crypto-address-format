@@ -28,17 +28,19 @@ export type TronValidationResult = ValidationResult<TronAddressType>;
 export const validateTRX = createValidator<TronValidationResult>(
   (address, {failure, success}) => {
     if (!address.startsWith('T')) {
-      return failure(
-        ValidationErrorCodes.INVALID_PREFIX,
-        'Invalid TRON address prefix'
-      );
+      return failure({
+        code: ValidationErrorCodes.INVALID_PREFIX,
+        message: 'Invalid TRON address prefix',
+        original: address,
+      });
     }
 
     if (address.length !== 34) {
-      return failure(
-        ValidationErrorCodes.INVALID_LENGTH,
-        'Invalid TRON address length'
-      );
+      return failure({
+        code: ValidationErrorCodes.INVALID_LENGTH,
+        message: 'Invalid TRON address length',
+        original: address,
+      });
     }
 
     const result = base58Check(address, {
@@ -47,10 +49,18 @@ export const validateTRX = createValidator<TronValidationResult>(
     });
 
     if (!result.isValid) {
-      return failure(mapBase58CheckError(result.code), result.message);
+      return failure({
+        code: mapBase58CheckError(result.code),
+        message: result.message,
+        original: address,
+      });
     }
 
-    return success('TRON', address);
+    return success({
+      type: 'TRON',
+      address,
+      original: address,
+    });
   }
 );
 

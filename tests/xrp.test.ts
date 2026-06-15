@@ -8,7 +8,6 @@ describe('validateXRP', () => {
     it('validates a standard classic r-address', () => {
       const address = 'rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh';
       const result = validateXRP(address);
-
       expect(result.isValid).toBe(true);
       if (result.isValid) {
         expect(result.type).toBe('Classic');
@@ -19,7 +18,6 @@ describe('validateXRP', () => {
     it('validates a mainnet x-address', () => {
       const address = 'XVLhHMPHU98es4dbozjVtdWzVrDjtV18pX8yuPT7y4xaEHi';
       const result = validateXRP(address);
-
       expect(result.isValid).toBe(true);
       if (result.isValid) {
         expect(result.type).toBe('X-Address-Mainnet');
@@ -100,7 +98,6 @@ describe('validateXRP', () => {
     });
 
     it('fails on unsupported start characters', () => {
-      // XRP addresses must start with r, X, or T
       const r1 = validateXRP('sHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh');
       expect(r1.isValid).toBe(false);
       if (!r1.isValid) {
@@ -115,7 +112,6 @@ describe('validateXRP', () => {
     });
 
     it('is case sensitive', () => {
-      // Classic addresses must start with lowercase 'r'
       const result = validateXRP('RHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh');
       expect(result.isValid).toBe(false);
       if (!result.isValid) {

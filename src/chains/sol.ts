@@ -29,28 +29,35 @@ export type SOLValidationResult = ValidationResult<SolanaAddressType>;
 export const validateSOL = createValidator<SOLValidationResult>(
   (address, context): SOLValidationResult => {
     if (address.length < 32 || address.length > 44) {
-      return context.failure(
-        ValidationErrorCodes.INVALID_LENGTH,
-        'Invalid address length (expected 32-44 characters)'
-      );
+      return context.failure({
+        code: ValidationErrorCodes.INVALID_LENGTH,
+        message: 'Invalid address length (expected 32-44 characters)',
+        original: address,
+      });
     }
 
     const decoded = base58.decodeUnsafe(address);
     if (!decoded) {
-      return context.failure(
-        ValidationErrorCodes.INVALID_ENCODING,
-        'Invalid Base58 encoding'
-      );
+      return context.failure({
+        code: ValidationErrorCodes.INVALID_ENCODING,
+        message: 'Invalid Base58 encoding',
+        original: address,
+      });
     }
 
     if (decoded.length !== 32) {
-      return context.failure(
-        ValidationErrorCodes.INVALID_FORMAT,
-        'Decoded public key must be exactly 32 bytes'
-      );
+      return context.failure({
+        code: ValidationErrorCodes.INVALID_FORMAT,
+        message: 'Decoded public key must be exactly 32 bytes',
+        original: address,
+      });
     }
 
-    return context.success('Solana', address);
+    return context.success({
+      type: 'Solana',
+      address,
+      original: address,
+    });
   }
 );
 

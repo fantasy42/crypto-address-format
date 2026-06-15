@@ -42,23 +42,29 @@ export const validateTON = createValidator<TONValidationResult>(
     if (address.includes(':')) {
       const match = RAW_REGEXP.exec(address);
       if (!match) {
-        return context.failure(
-          ValidationErrorCodes.INVALID_FORMAT,
-          'Invalid Raw address structure or malformed hex payload'
-        );
+        return context.failure({
+          code: ValidationErrorCodes.INVALID_FORMAT,
+          message: 'Invalid Raw address structure or malformed hex payload',
+          original: address,
+        });
       }
 
       const workchainString = match[1];
       const workchain = Number.parseInt(workchainString, 10);
 
       if (Number.isNaN(workchain) || String(workchain) !== workchainString) {
-        return context.failure(
-          ValidationErrorCodes.INVALID_FORMAT,
-          'Invalid workchain identifier'
-        );
+        return context.failure({
+          code: ValidationErrorCodes.INVALID_FORMAT,
+          message: 'Invalid workchain identifier',
+          original: address,
+        });
       }
 
-      return context.success('Raw', address);
+      return context.success({
+        type: 'Raw',
+        address,
+        original: address,
+      });
     }
 
     if (FRIENDLY_REGEXP.test(address)) {
@@ -66,10 +72,11 @@ export const validateTON = createValidator<TONValidationResult>(
       try {
         data = decodeBase64To36Bytes(address);
       } catch {
-        return context.failure(
-          ValidationErrorCodes.INVALID_ENCODING,
-          'Malformed user-friendly base64 encoding payload'
-        );
+        return context.failure({
+          code: ValidationErrorCodes.INVALID_ENCODING,
+          message: 'Malformed user-friendly base64 encoding payload',
+          original: address,
+        });
       }
 
       // 34-byte payload + 2-byte CRC16
@@ -81,10 +88,11 @@ export const validateTON = createValidator<TONValidationResult>(
         calculatedCrc[0] !== incomingCrc[0] ||
         calculatedCrc[1] !== incomingCrc[1]
       ) {
-        return context.failure(
-          ValidationErrorCodes.INVALID_CHECKSUM,
-          'Invalid address checksum'
-        );
+        return context.failure({
+          code: ValidationErrorCodes.INVALID_CHECKSUM,
+          message: 'Invalid address checksum',
+          original: address,
+        });
       }
 
       let tag = payload[0];
@@ -96,10 +104,11 @@ export const validateTON = createValidator<TONValidationResult>(
       }
 
       if (tag !== BOUNCEABLE_TAG && tag !== NON_BOUNCEABLE_TAG) {
-        return context.failure(
-          ValidationErrorCodes.INVALID_FORMAT,
-          'Unknown user-friendly address serialization tag'
-        );
+        return context.failure({
+          code: ValidationErrorCodes.INVALID_FORMAT,
+          message: 'Unknown user-friendly address serialization tag',
+          original: address,
+        });
       }
 
       const isBounceable = tag === BOUNCEABLE_TAG;
@@ -115,13 +124,18 @@ export const validateTON = createValidator<TONValidationResult>(
           : 'UserFriendly-NonBounceable';
       }
 
-      return context.success(resolvedType, address);
+      return context.success({
+        type: resolvedType,
+        address,
+        original: address,
+      });
     }
 
-    return context.failure(
-      ValidationErrorCodes.UNSUPPORTED_TYPE,
-      'Unsupported TON address format or character set'
-    );
+    return context.failure({
+      code: ValidationErrorCodes.UNSUPPORTED_TYPE,
+      message: 'Unsupported TON address format or character set',
+      original: address,
+    });
   }
 );
 

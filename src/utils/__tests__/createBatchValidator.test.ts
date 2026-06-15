@@ -11,10 +11,16 @@ const okValidator = createValidator<ValidationResult<'Ok'>>((address) => ({
   isValid: true,
   type: 'Ok',
   address,
+  original: address,
 }));
 
-const failValidator = createValidator<ValidationResult<'Fail'>>((_, ctx) =>
-  ctx.failure(ValidationErrorCodes.UNSUPPORTED_TYPE, 'always invalid')
+const failValidator = createValidator<ValidationResult<'Fail'>>(
+  (address, ctx) =>
+    ctx.failure({
+      code: ValidationErrorCodes.UNSUPPORTED_TYPE,
+      message: 'always invalid',
+      original: address,
+    })
 );
 
 describe('createBatchValidator', () => {

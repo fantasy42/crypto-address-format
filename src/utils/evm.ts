@@ -2,11 +2,9 @@ import type {ValidationContext} from './createValidator';
 import type {ValidationResult} from '../types';
 
 import {keccak_256} from '@noble/hashes/sha3.js';
-
 import {ValidationErrorCodes} from '../constants';
 
 const HEX_REGEX = /^[0-9a-fA-F]{40}$/;
-
 const encoder = new TextEncoder();
 
 /**
@@ -19,24 +17,27 @@ export const getEVMLogic =
     {success, failure}: ValidationContext
   ): ValidationResult<T> => {
     if (address.length !== 42) {
-      return failure(
-        ValidationErrorCodes.INVALID_LENGTH,
-        `Invalid ${label} address length (expected 42, got ${address.length})`
-      );
+      return failure({
+        code: ValidationErrorCodes.INVALID_LENGTH,
+        message: `Invalid ${label} address length (expected 42, got ${address.length})`,
+        original: address,
+      });
     }
     if (address[0] !== '0' || (address[1] !== 'x' && address[1] !== 'X')) {
-      return failure(
-        ValidationErrorCodes.INVALID_PREFIX,
-        `Invalid ${label} address prefix (must start with 0x)`
-      );
+      return failure({
+        code: ValidationErrorCodes.INVALID_PREFIX,
+        message: `Invalid ${label} address prefix (must start with 0x)`,
+        original: address,
+      });
     }
 
     const hexPart = address.slice(2);
     if (!HEX_REGEX.test(hexPart)) {
-      return failure(
-        ValidationErrorCodes.INVALID_FORMAT,
-        'Invalid hexadecimal characters'
-      );
+      return failure({
+        code: ValidationErrorCodes.INVALID_FORMAT,
+        message: 'Invalid hexadecimal characters',
+        original: address,
+      });
     }
 
     const isLowercase = hexPart === hexPart.toLowerCase();
@@ -59,13 +60,18 @@ export const getEVMLogic =
         const isUpperActual = char === char.toUpperCase();
 
         if (shouldBeUpper !== isUpperActual) {
-          return failure(
-            ValidationErrorCodes.INVALID_CHECKSUM,
-            `Invalid ${label} checksum (EIP‑55)`
-          );
+          return failure({
+            code: ValidationErrorCodes.INVALID_CHECKSUM,
+            message: `Invalid ${label} checksum (EIP-55)`,
+            original: address,
+          });
         }
       }
     }
 
-    return success(label, `0x${hexPart.toLowerCase()}`);
+    return success({
+      type: label,
+      address: `0x${hexPart.toLowerCase()}`,
+      original: address,
+    });
   };

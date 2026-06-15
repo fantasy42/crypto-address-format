@@ -43,10 +43,11 @@ export const validateLTC = createValidator<LTCValidationResult>(
       return validateLtcBase58(address, context);
     }
 
-    return context.failure(
-      ValidationErrorCodes.UNSUPPORTED_TYPE,
-      'Unsupported address format or prefix'
-    );
+    return context.failure({
+      code: ValidationErrorCodes.UNSUPPORTED_TYPE,
+      message: 'Unsupported address format or prefix',
+      original: address,
+    });
   }
 );
 
@@ -66,10 +67,11 @@ function validateLtcBech32(
   {success, failure}: ValidationContext
 ): LTCValidationResult {
   if (original !== lower && original !== original.toUpperCase()) {
-    return failure(
-      ValidationErrorCodes.MIXED_CASE,
-      'Mixed case is invalid for Bech32'
-    );
+    return failure({
+      code: ValidationErrorCodes.MIXED_CASE,
+      message: 'Mixed case is invalid for Bech32',
+      original,
+    });
   }
 
   let decoded;
@@ -83,57 +85,64 @@ function validateLtcBech32(
       decoded = bech32m.decode(lower, 1023);
       isBech32m = true;
     } catch {
-      return failure(
-        ValidationErrorCodes.INVALID_CHECKSUM,
-        'Invalid Bech32/Bech32m checksum or encoding'
-      );
+      return failure({
+        code: ValidationErrorCodes.INVALID_CHECKSUM,
+        message: 'Invalid Bech32/Bech32m checksum or encoding',
+        original,
+      });
     }
   }
 
   if (decoded.prefix !== 'ltc') {
-    return failure(
-      ValidationErrorCodes.INVALID_PREFIX,
-      'Invalid human-readable part (HRP) for Litecoin'
-    );
+    return failure({
+      code: ValidationErrorCodes.INVALID_PREFIX,
+      message: 'Invalid human-readable part (HRP) for Litecoin',
+      original,
+    });
   }
 
   if (decoded.words.length === 0) {
-    return failure(
-      ValidationErrorCodes.INVALID_FORMAT,
-      'Missing witness version byte'
-    );
+    return failure({
+      code: ValidationErrorCodes.INVALID_FORMAT,
+      message: 'Missing witness version byte',
+      original,
+    });
   }
 
   const witnessVersion = decoded.words[0];
 
   if (witnessVersion > 16) {
-    return failure(
-      ValidationErrorCodes.INVALID_VERSION,
-      'Invalid witness version (must be 0-16)'
-    );
+    return failure({
+      code: ValidationErrorCodes.INVALID_VERSION,
+      message: 'Invalid witness version (must be 0-16)',
+      original,
+    });
   }
 
   if (witnessVersion === 0 && isBech32m) {
-    return failure(
-      ValidationErrorCodes.INVALID_ENCODING,
-      'Version 0 must use Bech32 encoding'
-    );
+    return failure({
+      code: ValidationErrorCodes.INVALID_ENCODING,
+      message: 'Version 0 must use Bech32 encoding',
+      original,
+    });
   }
 
   if (witnessVersion >= 1 && !isBech32m) {
-    return failure(
-      ValidationErrorCodes.INVALID_ENCODING,
-      'Version 1+ must use Bech32m encoding'
-    );
+    return failure({
+      code: ValidationErrorCodes.INVALID_ENCODING,
+      message: 'Version 1+ must use Bech32m encoding',
+      original,
+    });
   }
 
   const programWords = decoded.words.slice(1);
   const programBytes = fromWordsUnsafe(programWords);
   if (!programBytes) {
-    return failure(
-      ValidationErrorCodes.INVALID_FORMAT,
-      'Invalid witness program padding (non-zero padding bits)'
-    );
+    return failure({
+      code: ValidationErrorCodes.INVALID_FORMAT,
+      message: 'Invalid witness program padding (non-zero padding bits)',
+      original,
+    });
   }
 
   if (
@@ -141,13 +150,19 @@ function validateLtcBech32(
     programBytes.length !== 20 &&
     programBytes.length !== 32
   ) {
-    return failure(
-      ValidationErrorCodes.INVALID_LENGTH,
-      'Invalid witness program length for version 0 (must be 20 or 32 bytes)'
-    );
+    return failure({
+      code: ValidationErrorCodes.INVALID_LENGTH,
+      message:
+        'Invalid witness program length for version 0 (must be 20 or 32 bytes)',
+      original,
+    });
   }
 
-  return success(witnessVersion === 0 ? 'Bech32' : 'Bech32m', lower);
+  return success({
+    type: witnessVersion === 0 ? 'Bech32' : 'Bech32m',
+    address: lower,
+    original: lower,
+  });
 }
 
 function validateLtcBase58(
@@ -157,7 +172,11 @@ function validateLtcBase58(
   const result = base58Check(address, {codec: base58});
 
   if (!result.isValid) {
-    return failure(mapBase58CheckError(result.code), result.message);
+    return failure({
+      code: mapBase58CheckError(result.code),
+      message: result.message,
+      original: address,
+    });
   }
 
   // Mainnet version bytes: P2PKH=0x30 (L), P2SH=0x32 (M) or 0x05 (3)
@@ -165,18 +184,25 @@ function validateLtcBase58(
   const isP2SH = result.version === 0x32 || result.version === 0x05;
 
   if (!isP2PKH && !isP2SH) {
-    return failure(
-      ValidationErrorCodes.UNSUPPORTED_TYPE,
-      'Unsupported Litecoin address version'
-    );
+    return failure({
+      code: ValidationErrorCodes.UNSUPPORTED_TYPE,
+      message: 'Unsupported Litecoin address version',
+      original: address,
+    });
   }
 
   if (result.payload.length !== 20) {
-    return failure(
-      ValidationErrorCodes.INVALID_LENGTH,
-      'Invalid public key hash or script hash length (must be 20 bytes)'
-    );
+    return failure({
+      code: ValidationErrorCodes.INVALID_LENGTH,
+      message:
+        'Invalid public key hash or script hash length (must be 20 bytes)',
+      original: address,
+    });
   }
 
-  return success(isP2PKH ? 'P2PKH' : 'P2SH', address);
+  return success({
+    type: isP2PKH ? 'P2PKH' : 'P2SH',
+    address,
+    original: address,
+  });
 }

@@ -14,6 +14,7 @@ describe('createValidator factory', () => {
       const result = safeValidate(alwaysSuccessValidator, validAddress);
       if (result.isValid) {
         expect(result.type).toBe('test');
+        expect(result.original).toBe(validAddress);
       } else {
         expect(result.isValid).toBe(true);
       }
@@ -21,7 +22,7 @@ describe('createValidator factory', () => {
 
     it('trims whitespace before passing to inner validator', () => {
       const spy = vi.fn((addr: string, ctx: ValidationContext) =>
-        ctx.success('test', addr)
+        ctx.success({type: 'test', address: addr, original: addr})
       );
       const validator = createValidator(spy);
       validator('   ' + validAddress + '   ');
@@ -37,8 +38,9 @@ describe('createValidator factory', () => {
         if (!result.isValid) {
           expect(result.code).toBe(ValidationErrorCodes.NULL_OR_UNDEFINED);
           expect(result.message).toContain(
-            'Address must be a non‑empty string'
+            'Address must be a non-empty string'
           );
+          expect(result.original).toBe('');
         }
       }
     );
@@ -52,6 +54,7 @@ describe('createValidator factory', () => {
         if (!result.isValid) {
           expect(result.code).toBe(ValidationErrorCodes.EMPTY);
           expect(result.message).toContain('empty or whitespace');
+          expect(result.original).toBe(input.trim());
         }
       }
     );
@@ -66,7 +69,8 @@ describe('createValidator factory', () => {
       assertResultShape(result);
       if (!result.isValid) {
         expect(result.code).toBe(ValidationErrorCodes.NULL_OR_UNDEFINED);
-        expect(result.message).toContain('non‑empty');
+        expect(result.message).toContain('non-empty');
+        expect(result.original).toBe('');
       }
     });
 
@@ -78,6 +82,7 @@ describe('createValidator factory', () => {
       if (!result.isValid) {
         expect(result.code).toBe(ValidationErrorCodes.TOO_LONG);
         expect(result.message).toContain('maximum length');
+        expect(result.original).toBe(veryLongString.trim());
       }
     });
 
@@ -90,6 +95,7 @@ describe('createValidator factory', () => {
         if (!result.isValid) {
           expect(result.code).toBe(ValidationErrorCodes.INVALID_CHARACTERS);
           expect(result.message).toContain('invalid characters');
+          expect(result.original).toBe(input.trim());
         }
       }
     );
@@ -103,6 +109,7 @@ describe('createValidator factory', () => {
       if (!result.isValid) {
         expect(result.code).toBe(ValidationErrorCodes.INTERNAL_ERROR);
         expect(result.message).toMatch(/Internal Error: boom/);
+        expect(result.original).toBe('anything');
       }
     });
 
@@ -114,7 +121,7 @@ describe('createValidator factory', () => {
 
 const alwaysSuccessValidator = createValidator(
   (address: string, {success}: ValidationContext) => {
-    return success('test', address);
+    return success({type: 'test', address, original: address});
   }
 );
 
@@ -140,10 +147,10 @@ function assertResultShape(result: ValidationResult<any>) {
   if (result.isValid) {
     expect(result).toHaveProperty('type');
   } else {
-    // Updated assertions: failure shape is { code, message }
     expect(result).toHaveProperty('code');
     expect(typeof result.code).toBe('string');
     expect(result).toHaveProperty('message');
     expect(typeof result.message).toBe('string');
   }
+  expect(result).toHaveProperty('original');
 }

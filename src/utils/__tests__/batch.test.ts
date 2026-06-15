@@ -10,20 +10,27 @@ const okValidator = createValidator<ValidationResult<'Ok'>>((address) => ({
   isValid: true,
   type: 'Ok',
   address,
+  original: address,
 }));
 
-const failValidator = createValidator<ValidationResult<'Fail'>>((_, ctx) =>
-  ctx.failure(ValidationErrorCodes.UNSUPPORTED_TYPE, 'always invalid')
+const failValidator = createValidator<ValidationResult<'Fail'>>(
+  (address, ctx) =>
+    ctx.failure({
+      code: ValidationErrorCodes.UNSUPPORTED_TYPE,
+      message: 'always invalid',
+      original: address,
+    })
 );
 
 const conditionalValidator = createValidator<ValidationResult<'Cond'>>(
   (address, ctx) =>
     address === 'valid'
-      ? {isValid: true, type: 'Cond', address}
-      : ctx.failure(
-          ValidationErrorCodes.INVALID_FORMAT,
-          `unexpected: ${address}`
-        )
+      ? {isValid: true, type: 'Cond', address, original: address}
+      : ctx.failure({
+          code: ValidationErrorCodes.INVALID_FORMAT,
+          message: `unexpected: ${address}`,
+          original: address,
+        })
 );
 
 const throwingValidator = createValidator<ValidationResult<'Throw'>>(() => {
@@ -34,8 +41,17 @@ const normalizingValidator = createValidator<ValidationResult<'Norm'>>(
   (address, ctx) => {
     const trimmed = address.trim();
     if (trimmed.length === 0)
-      return ctx.failure(ValidationErrorCodes.EMPTY, 'empty');
-    return {isValid: true, type: 'Norm', address: trimmed.toLowerCase()};
+      return ctx.failure({
+        code: ValidationErrorCodes.EMPTY,
+        message: 'empty',
+        original: trimmed,
+      });
+    return {
+      isValid: true,
+      type: 'Norm',
+      address: trimmed.toLowerCase(),
+      original: trimmed,
+    };
   }
 );
 
@@ -91,6 +107,7 @@ describe('batch', () => {
         if (!r.isValid) {
           expect(r.code).toBe(ValidationErrorCodes.UNSUPPORTED_TYPE);
           expect(r.message).toBe('always invalid');
+          expect(r.original).toBe(r.index === 0 ? 'a' : 'b');
         }
       });
     });
@@ -170,14 +187,12 @@ describe('batch', () => {
     it('narrows the type correctly when checking isValid (valid branch)', () => {
       const results = batch(okValidator, ['x']);
       const result = results[0];
-
       if (result.isValid) {
         const _type: string = result.type;
         const _address: string = result.address;
         expect(_type).toBe('Ok');
         expect(_address).toBe('x');
       } else {
-        // Now this branch would contain code + message
         const _code = result.code;
         const _message = result.message;
         expect(_code).toBeTruthy();
@@ -201,6 +216,7 @@ describe('batch', () => {
       if (!results[0].isValid) {
         expect(results[0].code).toBe(ValidationErrorCodes.EMPTY);
         expect(results[0].message).toMatch(/empty|invalid/i);
+        expect(results[0].original).toBe('');
       }
     });
 
@@ -209,7 +225,7 @@ describe('batch', () => {
       expect(results[0].isValid).toBe(false);
       if (!results[0].isValid) {
         expect(results[0].code).toBe(ValidationErrorCodes.EMPTY);
-        expect(results[0].message).toMatch(/empty|invalid/i);
+        expect(results[0].original).toBe('');
       }
     });
 
@@ -219,7 +235,7 @@ describe('batch', () => {
       expect(results[0].isValid).toBe(false);
       if (!results[0].isValid) {
         expect(results[0].code).toBe(ValidationErrorCodes.TOO_LONG);
-        expect(results[0].message).toMatch(/maximum length|256/i);
+        expect(results[0].original).toBe(longAddress);
       }
     });
 
@@ -230,6 +246,7 @@ describe('batch', () => {
       expect(results[0].isValid).toBe(false);
       if (!results[0].isValid) {
         expect(results[0].code).toBe(ValidationErrorCodes.EMPTY);
+        expect(results[0].original).toBe('');
       }
     });
 

@@ -22,14 +22,18 @@ describe('EVM Logic validation (getEVMLogic)', () => {
       const addr = '0xd8da6bf26964af9d7eed9e03e53415d37aa96045';
       const result = validateGenericEVM(addr);
       expect(result.isValid).toBe(true);
-      if (result.isValid) expect(result.address).toBe(addr);
+      if (result.isValid) {
+        expect(result.address).toBe(addr);
+      }
     });
 
     it('accepts all-uppercase addresses (normalizes to lowercase)', () => {
       const addr = '0XD8DA6BF26964AF9D7EED9E03E53415D37AA96045';
       const result = validateGenericEVM(addr);
       expect(result.isValid).toBe(true);
-      if (result.isValid) expect(result.address).toBe(addr.toLowerCase());
+      if (result.isValid) {
+        expect(result.address).toBe(addr.toLowerCase());
+      }
     });
 
     it('accepts the 0X uppercase prefix variant', () => {
@@ -47,9 +51,8 @@ describe('EVM Logic validation (getEVMLogic)', () => {
 
   describe('negative cases', () => {
     it('fails when a single checksum character is incorrectly cased', () => {
-      const result = validateGenericEVM(
-        '0xd8dA6bF26964aF9D7eEd9e03E53415D37aA96045'
-      );
+      const addr = '0xd8dA6bF26964aF9D7eEd9e03E53415D37aA96045';
+      const result = validateGenericEVM(addr);
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
         expect(result.code).toBe(ValidationErrorCodes.INVALID_CHECKSUM);
@@ -58,9 +61,8 @@ describe('EVM Logic validation (getEVMLogic)', () => {
     });
 
     it('fails on invalid hexadecimal characters', () => {
-      const result = validateGenericEVM(
-        '0xG8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
-      );
+      const addr = '0xG8dA6BF26964aF9D7eEd9e03E53415D37aA96045';
+      const result = validateGenericEVM(addr);
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
         expect(result.code).toBe(ValidationErrorCodes.INVALID_FORMAT);
@@ -95,8 +97,8 @@ describe('EVM Logic validation (getEVMLogic)', () => {
     });
 
     it('rejects non-hex symbols', () => {
-      const specialChar = '0x!8dA6BF26964aF9D7eEd9e03E53415D37aA96045';
-      const result = validateGenericEVM(specialChar);
+      const addr = '0x!8dA6BF26964aF9D7eEd9e03E53415D37aA96045';
+      const result = validateGenericEVM(addr);
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
         expect(result.code).toBe(ValidationErrorCodes.INVALID_FORMAT);

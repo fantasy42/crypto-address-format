@@ -10,9 +10,7 @@ describe('validateton', () => {
       const result = validateTON(
         'kQAs9VlT6S776tq3unJcP5Ogsj-ELLunLXuOb1EKcOQi47nL'
       );
-
       expect(result.isValid).toBe(true);
-
       if (result.isValid) {
         expect(result.type).toBe('UserFriendly-Testnet-Bounceable');
         expect(result.address).toBe(
@@ -25,9 +23,7 @@ describe('validateton', () => {
       const result = validateTON(
         '0QAs9VlT6S776tq3unJcP5Ogsj-ELLunLXuOb1EKcOQi4-QO'
       );
-
       expect(result.isValid).toBe(true);
-
       if (result.isValid) {
         expect(result.type).toBe('UserFriendly-Testnet-NonBounceable');
       }
@@ -37,9 +33,7 @@ describe('validateton', () => {
       const result = validateTON(
         'EQAs9VlT6S776tq3unJcP5Ogsj-ELLunLXuOb1EKcOQi4wJB'
       );
-
       expect(result.isValid).toBe(true);
-
       if (result.isValid) {
         expect(result.type).toBe('UserFriendly-Bounceable');
       }
@@ -49,9 +43,7 @@ describe('validateton', () => {
       const result = validateTON(
         'EQAs9VlT6S776tq3unJcP5Ogsj+ELLunLXuOb1EKcOQi4wJB'
       );
-
       expect(result.isValid).toBe(true);
-
       if (result.isValid) {
         expect(result.type).toBe('UserFriendly-Bounceable');
       }
@@ -61,9 +53,7 @@ describe('validateton', () => {
       const result = validateTON(
         'UQAs9VlT6S776tq3unJcP5Ogsj-ELLunLXuOb1EKcOQi41-E'
       );
-
       expect(result.isValid).toBe(true);
-
       if (result.isValid) {
         expect(result.type).toBe('UserFriendly-NonBounceable');
       }
@@ -73,9 +63,7 @@ describe('validateton', () => {
       const result = validateTON(
         'UQAs9VlT6S776tq3unJcP5Ogsj+ELLunLXuOb1EKcOQi41+E'
       );
-
       expect(result.isValid).toBe(true);
-
       if (result.isValid) {
         expect(result.type).toBe('UserFriendly-NonBounceable');
       }
@@ -85,9 +73,7 @@ describe('validateton', () => {
       const result = validateTON(
         '0:2cf55953e92efbeadab7ba725c3f93a0b23f842cbba72d7b8e6f510a70e422e3'
       );
-
       expect(result.isValid).toBe(true);
-
       if (result.isValid) {
         expect(result.type).toBe('Raw');
       }
@@ -97,9 +83,7 @@ describe('validateton', () => {
       const result = validateTON(
         '-1:3333333333333333333333333333333333333333333333333333333333333333'
       );
-
       expect(result.isValid).toBe(true);
-
       if (result.isValid) {
         expect(result.type).toBe('Raw');
       }
@@ -131,7 +115,6 @@ describe('validateton', () => {
       const result = validateTON(
         'EQAs9VlT6S776tq3unJcP5Ogsj-ELLunLXuOb1EKcOQi4wJ'
       );
-
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
         expect(result.code).toBe(ValidationErrorCodes.UNSUPPORTED_TYPE);
@@ -142,7 +125,6 @@ describe('validateton', () => {
       const result = validateTON(
         '!@#$%^&*AAAAAAAAAAAAAA AAAAAAAAAA AAAAAAAAAAAA A'
       );
-
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
         expect(result.code).toBe(ValidationErrorCodes.UNSUPPORTED_TYPE);
@@ -184,7 +166,6 @@ describe('validateton', () => {
       const result = validateTON(
         '0:2cf55953e92efbeadab7ba725c3f93a0b23f842cbba72d7b8e6f510a70e422e'
       );
-
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
         expect(result.code).toBe(ValidationErrorCodes.INVALID_FORMAT);
@@ -195,7 +176,6 @@ describe('validateton', () => {
       const result = validateTON(
         '0:2cf55953e92efbeadab7ba725c3f93a0b23f842cbba72d7b8e6f510a70e422'
       );
-
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
         expect(result.code).toBe(ValidationErrorCodes.INVALID_FORMAT);
@@ -206,7 +186,6 @@ describe('validateton', () => {
       const result = validateTON(
         '0:EQDXDCFLXgiTrjGSNVBuvKPZVYlPn3J_u96xxLas3_yoRWRk'
       );
-
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
         expect(result.code).toBe(ValidationErrorCodes.INVALID_FORMAT);

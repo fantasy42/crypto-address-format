@@ -9,9 +9,7 @@ describe('validatetrx', () => {
       // TRON Foundation address
       const address = 'T9yD14Nj9j7xAB4dbGeiX9h8unkKHxuWwb';
       const result = validateTRX(address);
-
       expect(result.isValid).toBe(true);
-
       if (result.isValid) {
         expect(result.type).toBe('TRON');
         expect(result.address).toBe(address);
@@ -20,7 +18,6 @@ describe('validatetrx', () => {
 
     it('validates another valid mainnet address', () => {
       const result = validateTRX('TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t');
-
       expect(result.isValid).toBe(true);
     });
   });
@@ -28,7 +25,6 @@ describe('validatetrx', () => {
   describe('negative cases (invalid base58check)', () => {
     it('fails on invalid characters (0, O, I, l)', () => {
       const result = validateTRX('T7z5Tf9jj1k2a4VZqL4mKjD6CZ1ePZa1wO'); // 'O' instead of '6'
-
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
         expect(result.code).toBe(ValidationErrorCodes.INVALID_ENCODING);
@@ -38,7 +34,6 @@ describe('validatetrx', () => {
     it('fails on base58 checksum mismatch', () => {
       // Swapping last character from 6 to 7
       const result = validateTRX('T7z5Tf9jj1k2a4VZqL4mKjD6CZ1ePZa1w7');
-
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
         expect(result.code).toBe(ValidationErrorCodes.INVALID_CHECKSUM);
@@ -48,7 +43,6 @@ describe('validatetrx', () => {
 
     it('fails on incorrect payload length', () => {
       const result = validateTRX('T7z5Tf9jj1k2a4VZqL4mKjD6CZ1ePZa1'); // Too short
-
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
         expect(result.code).toBe(ValidationErrorCodes.INVALID_LENGTH);
@@ -60,7 +54,6 @@ describe('validatetrx', () => {
       // This is a valid BTC address (starts with 1, version 0x00)
       // but provided to the TRX validator
       const result = validateTRX('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa');
-
       expect(result.isValid).toBe(false);
       if (!result.isValid) {
         expect(result.code).toBe(ValidationErrorCodes.INVALID_PREFIX);

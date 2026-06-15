@@ -3,15 +3,19 @@ import type {ValidationErrorCodes} from './constants';
 /**
  * Discriminated union for validation outcomes.
  *
- * - `isValid: true` → successful validation with normalized address and detected type.
- * - `isValid: false` → validation failed with a machine-readable `code` and a
- *   human-readable `message`.
+ * - `isValid: true` → successful validation with normalized address, detected type, and original input.
+ * - `isValid: false` → validation failed with a machine‑readable `code`, a human‑readable `message`, and the original input.
  *
  * @template T - The detected address type (e.g. `'Bech32'`, `'P2PKH'`, `'Ethereum'`).
  */
 export type ValidationResult<T extends string = string> =
-  | {isValid: true; type: T; address: string}
-  | {isValid: false; code: ValidationErrorCode; message: string};
+  | {isValid: true; type: T; address: string; original: string}
+  | {
+      isValid: false;
+      code: ValidationErrorCode;
+      message: string;
+      original: string;
+    };
 
 /**
  * A batch validation input.
@@ -27,14 +31,16 @@ export type BatchItem = string | {address: string; id?: string | number};
  * Extends {@link ValidationResult} with the original input, its position
  * in the input array, and an optional tracking `id`.
  *
- * - When `isValid` is `true`, contains the normalized address and detected type.
- * - When `isValid` is `false`, contains a machine‑readable `code` and a
- *   human‑readable `message`.
+ * - When `isValid` is `true`, contains the normalized address, detected type, and original input.
+ * - When `isValid` is `false`, contains a machine‑readable `code`, a human‑readable `message`, and the original input.
  *
  * @template T - The detected address type (e.g., `'Bech32'`, `'Ethereum'`).
  */
 export type BatchValidationResult<T extends string = string> =
-  | (Omit<Extract<ValidationResult<T>, {isValid: true}>, 'address'> & {
+  | (Omit<
+      Extract<ValidationResult<T>, {isValid: true}>,
+      'address' | 'original'
+    > & {
       address: string;
       original: string;
       index: number;
