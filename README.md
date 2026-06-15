@@ -21,12 +21,12 @@ import { validateBTC } from 'cryptovalid';
 const result = validateBTC('bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4');
 
 // On success: { isValid: true, type: 'Bech32', address: 'bc1qw508....' }
-// On failure: { isValid: false, error: 'Invalid Bech32 checksum' }
+// On failure: { isValid: false, code: 'INVALID_CHECKSUM', message: 'Invalid Bech32 checksum' }
 
 if (result.isValid) {
   console.log(`Valid ${result.type} address: ${result.address}`);
 } else {
-  console.error(`Validation failed: ${result.error}`);
+  console.error(`Validation failed: ${result.code} – ${result.message}`);
 }
 ```
 
@@ -47,7 +47,7 @@ results.forEach((r) => {
   if (r.isValid) {
     console.log(`✅ [${r.index}] ${r.original} → ${r.type}`);
   } else {
-    console.error(`❌ [${r.index}] ${r.original} → ${r.error}`);
+    console.error(`❌ [${r.index}] ${r.original} → ${r.code}: ${r.message}`);
   }
 });
 ```
@@ -70,6 +70,65 @@ All validators below are also available as batch versions (e.g. `validateBTC` �
 | **XRP**         | `validateXRP`                          | Classic (r-prefix) + X-Address                    |
 | **Stellar**     | `validateXLM`                          | Standard (G…) + Muxed (M…) + CRC16                |
 | **TON**         | `validateTON`                          | Raw + User-Friendly formats + CRC16               |
+
+## Error Codes
+
+Starting in **v0.4.0**, all failure results contain a **machine-readable `code`** alongside a human-friendly `message`.
+This allows you to build smart error handling, custom UI messages, analytics, and recovery flows without string parsing.
+
+### Available Error Codes
+
+Import the codes and type:
+
+```ts
+import { ValidationErrorCodes, type ValidationErrorCode } from 'cryptovalid';
+```
+
+| Code                   | Meaning                                                                      |
+|------------------------|------------------------------------------------------------------------------|
+| `NULL_OR_UNDEFINED`    | Input was `null`, `undefined`, or not a string.                              |
+| `EMPTY`                | Address was empty or only whitespace.                                        |
+| `TOO_LONG`             | Address exceeds maximum length (256 chars).                                  |
+| `INVALID_CHARACTERS`   | Contains control or non‑printable characters.                                |
+| `INVALID_FORMAT`       | General format violation.                                                    |
+| `INVALID_PREFIX`       | Missing or invalid prefix.                                                   |
+| `INVALID_LENGTH`       | Wrong length for the address type.                                           |
+| `INVALID_CHECKSUM`     | Checksum verification failed (Bech32, Base58Check, EIP‑55, CRC16, etc.).     |
+| `INVALID_VERSION`      | Invalid version byte or witness version.                                     |
+| `INVALID_ENCODING`     | Invalid underlying encoding.                                                 |
+| `MIXED_CASE`           | Mixed case where single case is required.                                    |
+| `UNSUPPORTED_TYPE`     | Format not supported by this validator.                                      |
+| `INTERNAL_ERROR`       | Unexpected internal error.                                                   |
+
+### Usage example
+
+```ts
+import { validateETH, ValidationErrorCodes } from 'cryptovalid';
+
+const result = validateETH(address);
+
+if (!result.isValid) {
+  switch (result.code) {
+    case ValidationErrorCodes.INVALID_CHECKSUM:
+      showChecksumError(result.message);
+      break;
+
+    case ValidationErrorCodes.INVALID_PREFIX:
+      showPrefixError(result.message);
+      break;
+
+    default:
+      showGenericError(result.message);
+  }
+}
+```
+
+You can also map codes to translations, icons, or severity levels.
+
+### Upgrading from v0.3.x
+
+- The old `{ isValid: false, error: string }` shape has been replaced by `{ isValid: false, code: ValidationErrorCode, message: string }`.
+- Old code accessing `result.error` should be updated to use `result.code` and `result.message`.
 
 ## Modular Imports
 
