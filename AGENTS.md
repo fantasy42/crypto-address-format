@@ -73,7 +73,7 @@ All functions are available from the main entry point (`cryptovalid`). For minim
 
 ### Error System
 
-Every failure result contains a **machine‑readable `code`** and a **human‑readable `message`**. The codes are chain‑agnostic and reused across all validators.
+Every failure result contains a **machine‑readable `code`** and a **human‑readable `message`**. The codes are chain‑agnostic and reused across all validators. Both success and failure results carry an `original` field with the trimmed input string.
 
 #### Public API
 
@@ -85,7 +85,7 @@ Every failure result contains a **machine‑readable `code`** and a **human‑re
 
 The `base58Check` utility returns its own internal error codes. The helper function `mapBase58CheckError` maps those internal codes to the public `ValidationErrorCodes`, so that chain validators only deal with the public set.
 
-When writing a new validator, use the factory's `failure(code, message)` method. The `code` must be one of the public constants.
+When writing a new validator, use the factory's `failure({code, message, original})` method. The `code` must be one of the public constants, and `original` should be the trimmed address being validated. The `success({type, address, original})` method follows the same object‑parameter pattern.
 
 #### Available codes
 
@@ -164,7 +164,7 @@ Vite+ is distinct from Vite itself; it invokes Vite internally for commands like
    - Trims the input.
    - Ensures the string is non‑empty, ≤256 chars, and contains only ASCII printable characters (codes 32–126).
    - Catches synchronous exceptions and converts them to a failure with `code` and `message`.
-   The `failure` helper requires a `code` from `ValidationErrorCodes` as the first argument.
+   The `failure` helper accepts an object with `code`, `message`, and `original` fields. The `success` helper accepts `type`, `address`, and `original`.
 3. **Formatting Rules** – Enforced by `vp check`:
    - Semicolons required (`semi: true`)
    - Single quotes (`singleQuote: true`)
@@ -234,7 +234,7 @@ Vite+ is distinct from Vite itself; it invokes Vite internally for commands like
    - Positive cases (valid addresses of each type)
    - Negative cases (invalid length, wrong charset, checksum mismatch, wrong network)
    - Edge cases (empty string, whitespace‑only, maximum length, leading zero bytes, etc.)
-   - Tests must assert `result.code` and `result.message` on failure, not a plain `error` string.
+   - Tests must assert `result.code` and `result.message` on failure, not a plain `error` string. The `original` field should be asserted only where it documents a specific behavior (e.g., trimming, null input).
 3. **CI Requirements**: The GitHub Actions CI pipeline runs `vp install`, `vp check`, and `vp test`. All PRs must pass these checks without errors.
 
 ## Security and reliability
