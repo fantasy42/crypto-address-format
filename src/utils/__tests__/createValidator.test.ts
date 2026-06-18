@@ -7,115 +7,100 @@ import {createValidator} from '../createValidator';
 import {ValidationErrorCodes} from '../../constants';
 
 describe('createValidator factory', () => {
-  describe('base input validation (enforced by factory)', () => {
-    const validAddress = '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa';
+  const validAddress = '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa';
 
-    it('passes a valid string through to the inner validator', () => {
-      const result = safeValidate(alwaysSuccessValidator, validAddress);
-      if (result.isValid) {
-        expect(result.type).toBe('test');
-        expect(result.original).toBe(validAddress);
-      } else {
-        expect(result.isValid).toBe(true);
-      }
-    });
-
-    it('trims whitespace before passing to inner validator', () => {
-      const spy = vi.fn((addr: string, ctx: ValidationContext) =>
-        ctx.success({type: 'test', address: addr, original: addr})
-      );
-      const validator = createValidator(spy);
-      validator('   ' + validAddress + '   ');
-      expect(spy).toHaveBeenCalledWith(validAddress, expect.any(Object));
-    });
-
-    it.each([null, undefined, 123, {}, [], true])(
-      'should fail on non-string input: %s',
-      (input) => {
-        const result = safeValidate(alwaysSuccessValidator, input);
-        expect(result.isValid).toBe(false);
-        assertResultShape(result);
-        if (!result.isValid) {
-          expect(result.code).toBe(ValidationErrorCodes.NULL_OR_UNDEFINED);
-          expect(result.message).toContain(
-            'Address must be a non-empty string'
-          );
-          expect(result.original).toBe('');
-        }
-      }
-    );
-
-    it.each(['', '   ', '\t', '\n'])(
-      'should fail on empty or whitespace string: %s',
-      (input) => {
-        const result = safeValidate(alwaysSuccessValidator, input);
-        expect(result.isValid).toBe(false);
-        assertResultShape(result);
-        if (!result.isValid) {
-          expect(result.code).toBe(ValidationErrorCodes.EMPTY);
-          expect(result.message).toContain('empty or whitespace');
-          expect(result.original).toBe(input.trim());
-        }
-      }
-    );
-
-    it.each([
-      {toString: () => validAddress},
-      {valueOf: () => validAddress},
-      {[Symbol.toPrimitive]: () => validAddress},
-    ] as any[])('should fail on objects impersonating strings', (coercer) => {
-      const result = safeValidate(alwaysSuccessValidator, coercer);
-      expect(result.isValid).toBe(false);
-      assertResultShape(result);
-      if (!result.isValid) {
-        expect(result.code).toBe(ValidationErrorCodes.NULL_OR_UNDEFINED);
-        expect(result.message).toContain('non-empty');
-        expect(result.original).toBe('');
-      }
-    });
-
-    it('should fail safely on extremely long strings', () => {
-      const veryLongString = '1' + 'A'.repeat(10000);
-      const result = safeValidate(alwaysSuccessValidator, veryLongString);
-      expect(result.isValid).toBe(false);
-      assertResultShape(result);
-      if (!result.isValid) {
-        expect(result.code).toBe(ValidationErrorCodes.TOO_LONG);
-        expect(result.message).toContain('maximum length');
-        expect(result.original).toBe(veryLongString.trim());
-      }
-    });
-
-    it.each(['0xd8dA6BF\u000026964aF9D7eEd9e03E53415D37aA96045', '😃😃😃'])(
-      'should fail on strings with control/unicode characters: %s',
-      (input) => {
-        const result = safeValidate(alwaysSuccessValidator, input);
-        expect(result.isValid).toBe(false);
-        assertResultShape(result);
-        if (!result.isValid) {
-          expect(result.code).toBe(ValidationErrorCodes.INVALID_CHARACTERS);
-          expect(result.message).toContain('invalid characters');
-          expect(result.original).toBe(input.trim());
-        }
-      }
-    );
+  it('passes a valid string through to the inner validator', () => {
+    const result = alwaysSuccessValidator(validAddress);
+    expect(result.isValid).toBe(true);
+    if (result.isValid) {
+      expect(result.type).toBe('test');
+      expect(result.original).toBe(validAddress);
+    }
   });
 
-  describe('factory error handling', () => {
-    it('catches exceptions from the inner validator and returns an Internal Error', () => {
-      const result = safeValidate(throwingValidator, 'anything');
-      expect(result.isValid).toBe(false);
-      assertResultShape(result);
-      if (!result.isValid) {
-        expect(result.code).toBe(ValidationErrorCodes.INTERNAL_ERROR);
-        expect(result.message).toMatch(/Internal Error: boom/);
-        expect(result.original).toBe('anything');
-      }
-    });
+  it('trims whitespace before calling inner validator', () => {
+    const spy = vi.fn((addr: string, ctx: ValidationContext) =>
+      ctx.success({type: 'test', address: addr, original: addr})
+    );
+    const validator = createValidator(spy);
+    validator('   ' + validAddress + '   ');
+    expect(spy).toHaveBeenCalledWith(validAddress, expect.any(Object));
+  });
 
-    it('never throws for any input, even after an inner exception', () => {
-      expect(() => throwingValidator('will-not-throw-outside')).not.toThrow();
-    });
+  it('delegates null/undefined to prevalidate (returns NULL_OR_UNDEFINED)', () => {
+    const result = alwaysSuccessValidator(null as any);
+    expect(result.isValid).toBe(false);
+    if (!result.isValid) {
+      expect(result.code).toBe(ValidationErrorCodes.NULL_OR_UNDEFINED);
+      expect(result.original).toBe('');
+    }
+  });
+
+  it('delegates empty/whitespace to prevalidate (returns EMPTY)', () => {
+    const result = alwaysSuccessValidator('   ');
+    expect(result.isValid).toBe(false);
+    if (!result.isValid) {
+      expect(result.code).toBe(ValidationErrorCodes.EMPTY);
+      expect(result.original).toBe('');
+    }
+  });
+
+  it('delegates too‑long to prevalidate (returns TOO_LONG)', () => {
+    const result = alwaysSuccessValidator('0x' + 'a'.repeat(257));
+    expect(result.isValid).toBe(false);
+    if (!result.isValid) {
+      expect(result.code).toBe(ValidationErrorCodes.TOO_LONG);
+    }
+  });
+
+  it('delegates invalid characters to prevalidate (returns INVALID_CHARACTERS)', () => {
+    const result = alwaysSuccessValidator('0x1234\x00abcd');
+    expect(result.isValid).toBe(false);
+    if (!result.isValid) {
+      expect(result.code).toBe(ValidationErrorCodes.INVALID_CHARACTERS);
+    }
+  });
+
+  it('catches exceptions from inner validator and returns INTERNAL_ERROR', () => {
+    const result = throwingValidator('anything');
+    expect(result.isValid).toBe(false);
+    if (!result.isValid) {
+      expect(result.code).toBe(ValidationErrorCodes.INTERNAL_ERROR);
+      expect(result.message).toMatch(/Internal Error: boom/);
+      expect(result.original).toBe('anything');
+    }
+  });
+
+  it('never throws for any input, even after inner exception', () => {
+    expect(() => throwingValidator('will-not-throw-outside')).not.toThrow();
+  });
+
+  it('validation context success builds correct result shape', () => {
+    const validator = createValidator((addr, ctx) =>
+      ctx.success({type: 'mock', address: addr, original: addr})
+    );
+    const res = validator('0x123');
+    expect(res.isValid).toBe(true);
+    if (res.isValid) {
+      expect(res.type).toBe('mock');
+      expect(res.address).toBe('0x123');
+    }
+  });
+
+  it('validation context failure builds correct result shape', () => {
+    const validator = createValidator((addr, ctx) =>
+      ctx.failure({
+        code: ValidationErrorCodes.INVALID_CHECKSUM,
+        message: 'bad',
+        original: addr,
+      })
+    );
+    const res = validator('0xabc');
+    expect(res.isValid).toBe(false);
+    if (!res.isValid) {
+      expect(res.code).toBe(ValidationErrorCodes.INVALID_CHECKSUM);
+      expect(res.message).toBe('bad');
+    }
   });
 });
 
@@ -130,27 +115,3 @@ const throwingValidator = createValidator<ValidationResult<any>>(
     throw new Error('boom');
   }
 );
-
-function safeValidate<T extends ValidationResult<any>>(
-  fn: (address: string) => T,
-  input: any
-): T {
-  let result: T;
-  expect(() => {
-    result = fn(input as string);
-  }).not.toThrow();
-  return result!;
-}
-
-function assertResultShape(result: ValidationResult<any>) {
-  expect(typeof result.isValid).toBe('boolean');
-  if (result.isValid) {
-    expect(result).toHaveProperty('type');
-  } else {
-    expect(result).toHaveProperty('code');
-    expect(typeof result.code).toBe('string');
-    expect(result).toHaveProperty('message');
-    expect(typeof result.message).toBe('string');
-  }
-  expect(result).toHaveProperty('original');
-}

@@ -1,6 +1,6 @@
-import type {ValidationResult} from '../types';
-import type {ValidationErrorCode} from '../types';
+import type {ValidationResult, ValidationErrorCode} from '../types';
 
+import {prevalidate} from './prevalidate';
 import {ValidationErrorCodes} from '../constants';
 
 export interface SuccessParams<T extends string> {
@@ -23,8 +23,6 @@ export interface ValidationContext {
   failure: (params: FailureParams) => ValidationResult<never>;
 }
 
-const MAX_ADDRESS_LENGTH = 256;
-
 /**
  * Wraps a validation function with common input checks and error handling.
  *
@@ -41,44 +39,17 @@ export function createValidator<R extends ValidationResult>(
   };
 
   return (address: string): R => {
-    if (address == null || typeof address !== 'string') {
+    const preResult = prevalidate(address);
+    if (!preResult.ok) {
       return context.failure({
-        code: ValidationErrorCodes.NULL_OR_UNDEFINED,
-        message: 'Address must be a non-empty string',
-        original: '',
+        code: preResult.code,
+        message: preResult.message,
+        original: preResult.original,
       }) as R;
-    }
-
-    const trimmed = address.trim();
-    if (trimmed.length === 0) {
-      return context.failure({
-        code: ValidationErrorCodes.EMPTY,
-        message: 'Address must not be empty or whitespace',
-        original: trimmed,
-      }) as R;
-    }
-
-    if (trimmed.length > MAX_ADDRESS_LENGTH) {
-      return context.failure({
-        code: ValidationErrorCodes.TOO_LONG,
-        message: `Address exceeds maximum length of ${MAX_ADDRESS_LENGTH} characters`,
-        original: trimmed,
-      }) as R;
-    }
-
-    for (let i = 0; i < trimmed.length; i++) {
-      const code = trimmed.charCodeAt(i);
-      if (code < 32 || code > 126) {
-        return context.failure({
-          code: ValidationErrorCodes.INVALID_CHARACTERS,
-          message: 'Address contains invalid characters',
-          original: trimmed,
-        }) as R;
-      }
     }
 
     try {
-      return validate(trimmed, context);
+      return validate(preResult.value, context);
     } catch (error) {
       const message =
         error instanceof Error && error.message
@@ -87,7 +58,7 @@ export function createValidator<R extends ValidationResult>(
       return context.failure({
         code: ValidationErrorCodes.INTERNAL_ERROR,
         message: `Internal Error: ${message}`,
-        original: trimmed,
+        original: preResult.value,
       }) as R;
     }
   };
