@@ -35,6 +35,7 @@ export default {
   pack: {
     entry: {
       index: 'src/index.ts',
+      any: 'src/any/index.ts',
       ...entries,
     },
     format: ['esm', 'cjs'],

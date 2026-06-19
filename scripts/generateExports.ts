@@ -38,6 +38,16 @@ try {
         types: './dist/index.d.cts',
       },
     },
+    './any': {
+      import: {
+        default: './dist/any.mjs',
+        types: './dist/any.d.mts',
+      },
+      require: {
+        default: './dist/any.cjs',
+        types: './dist/any.d.cts',
+      },
+    },
   };
 
   const allModules = [...chains, ...aliases];
