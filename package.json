@@ -203,7 +203,7 @@
     "bumpp": "11.1.0",
     "tinyglobby": "0.2.17",
     "typescript": "6.0.3",
-    "vite-plus": "0.1.24"
+    "vite-plus": "catalog:"
   },
   "peerDependencies": {
     "@noble/hashes": "^2.0.1"
