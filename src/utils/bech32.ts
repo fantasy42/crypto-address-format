@@ -9,7 +9,7 @@ for (let i = 0; i < ALPHABET.length; i++) {
 /**
  * Returned by a successful `decode` / `decodeUnsafe` call.
  */
-export interface Decoded {
+interface Decoded {
   prefix: string;
   words: number[];
 }

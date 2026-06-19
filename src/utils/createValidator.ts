@@ -3,13 +3,13 @@ import type {ValidationResult, ValidationErrorCode} from '../types';
 import {prevalidate} from './prevalidate';
 import {ValidationErrorCodes} from '../constants';
 
-export interface SuccessParams<T extends string> {
+interface SuccessParams<T extends string> {
   type: T;
   address: string;
   original: string;
 }
 
-export interface FailureParams {
+interface FailureParams {
   code: ValidationErrorCode;
   message: string;
   original: string;
