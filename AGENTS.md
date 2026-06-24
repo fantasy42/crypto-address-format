@@ -62,12 +62,22 @@ results.forEach((r) => {
 
 Each result preserves the original trimmed input, its position, and an optional `id` you supplied.
 
+### Omnibox Router (`validateAny`)
+
+The library includes a universal multi‑chain validator (`validateAny`) that automatically detects the blockchain of an address and returns all matching chains.
+
+- **`validateAny(address)`** – Validates an address against all supported chains. Uses a two‑tier routing system: fast heuristic pre‑filtering (regex/length patterns) to narrow down candidate chains, followed by strict checksum verification only on those candidates. Returns `{ isValid, chains, address, original }`.
+- **`validateAnyBatch(items)`** – Batch variant that accepts an array of addresses or `{ address, id }` objects and returns results in the same order, following the same batch pattern as other validators.
+
+The router lives in its own entry point (`cryptovalid/any`) so that users who import only a single chain are not burdened with the multi‑chain registry.
+
 ### Modular Imports
 
 All functions are available from the main entry point (`cryptovalid`). For minimal bundle sizes, use tree‑shakeable sub‑paths:
 
 - `cryptovalid/eth` – `validateETH`, `validateETHBatch`, etc.
 - `cryptovalid/btc` – `validateBTC`, `validateBTCBatch`
+- `cryptovalid/any` – `validateAny`, `validateAnyBatch`
 - `cryptovalid/usdt-bep20` – `validateUSDTBEP20`, `validateUSDTBEP20Batch`
 - (other chains follow the same pattern)
 
@@ -114,6 +124,11 @@ See the project README for a usage example with `switch` statements.
 ├── src/
 │   ├── aliases/          # Token variant and alias configurations (e.g., USDT types)
 │   │   └── usdt-*.ts
+│   │
+│   ├── any/              # Omnibox router – validateAny and validateAnyBatch
+│   │   ├── index.ts      # Router implementation
+│   │   ├── routes.ts     # Route registry (heuristic predicates + validators)
+│   │   └── types.ts      # AnyValidationResult, AnyBatchValidationResult
 │   │
 │   ├── chains/           # Blockchain network implementations and constants
 │   │   └── [chain_files].ts
@@ -165,6 +180,7 @@ Vite+ is distinct from Vite itself; it invokes Vite internally for commands like
    - Ensures the string is non‑empty, ≤256 chars, and contains only ASCII printable characters (codes 32–126).
    - Catches synchronous exceptions and converts them to a failure with `code` and `message`.
    The `failure` helper accepts an object with `code`, `message`, and `original` fields. The `success` helper accepts `type`, `address`, and `original`.
+   The shared input sanitisation is implemented in `src/utils/prevalidate.ts`.
 3. **Formatting Rules** – Enforced by `vp check`:
    - Semicolons required (`semi: true`)
    - Single quotes (`singleQuote: true`)
@@ -226,10 +242,17 @@ Vite+ is distinct from Vite itself; it invokes Vite internally for commands like
    export const validateUSDTXXXBatch = validate[Chain]Batch;
    ```
 
+6. **Adding a New Chain** – When a new chain validator is added, you must also update the omnibox router (`src/any/routes.ts`):
+   - Add a fast heuristic predicate (regex/length check) for the new chain in the `ROUTES` array.
+   - Add the new validator function to the `validators` array of the appropriate route entry. If the address format overlaps with an existing route (e.g., shared prefix), merge it into that route to avoid ambiguity.
+   - Add tests in `tests/any.test.ts` for the new chain (valid address → returns the correct chain, invalid address → fails appropriately, cross‑chain isolation checks).
+   - Update the `Supported Chains` table in `README.md`.
+
 ## Testing and quality
 
 1. **Test location** – `tests/*.test.ts` (e.g., `btc.test.ts`, `eth.test.ts`). Internal utility tests live in `src/utils/__tests__/`.
    Batch validators are covered by a generic batch test (`batch.test.ts`); individual chain batch functions do not require separate tests, as they use the same validation logic.
+   The omnibox router has its own dedicated test file `tests/any.test.ts`.
 2. **Test coverage** – Aim for ≥95% line coverage on all validator logic and all utility functions (base58, bech32, checksums). New validators must include:
    - Positive cases (valid addresses of each type)
    - Negative cases (invalid length, wrong charset, checksum mismatch, wrong network)
@@ -246,6 +269,7 @@ Vite+ is distinct from Vite itself; it invokes Vite internally for commands like
 2. **Backward compatibility** – Validation logic must remain backward‑compatible. Adding a new address type is allowed; changing the validation of an existing type (e.g., suddenly rejecting previously valid addresses) requires a major version bump.
 3. **Error codes and messages** – Every failure returns a `code` from `ValidationErrorCodes` and a `message`. The `code` is stable and can be relied upon programmatically (for `switch` statements, logging, analytics). The `message` is intended for display to end users; it is in English and may evolve over time as wording improves. Do not remove or change the meaning of existing error codes without a major version bump.
 4. **Batch validation** – Batch functions reuse the same single‑address validation logic and therefore inherit all security and reliability guarantees. No additional risks are introduced.
+5. **Omnibox router** – The router runs all matching validators for an address. Its results are only as secure as the underlying per‑chain validators. No new security risks are introduced by the routing logic itself.
 
 ## Contribution and pull requests
 
@@ -264,4 +288,5 @@ Before opening or requesting review on a PR, ensure you have completed the follo
 - [ ] Run `vp check` and `vp test` to format, lint, type check, and test all changes.
 - [ ] Check if there are `vite.config.ts` tasks or `package.json` scripts necessary for validation, and run them via `vp run <script>`.
 - [ ] Ensure any new or modified validators have corresponding tests covering valid/invalid addresses and edge cases.
+- [ ] If a new chain validator is added, update `src/any/routes.ts` (predicate + validator entry) and add cross‑chain tests in `tests/any.test.ts`.
 - [ ] If the public API is changed, update the documentation in `README.md`.
