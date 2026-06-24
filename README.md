@@ -71,10 +71,32 @@ All validators below are also available as batch versions (e.g. `validateBTC` �
 | **Stellar**     | `validateXLM`                          | Standard (G…) + Muxed (M…) + CRC16                |
 | **TON**         | `validateTON`                          | Raw + User-Friendly formats + CRC16               |
 
+## Universal Validation (`validateAny`)
+
+Validates an address against all supported chains at once. Designed for input boxes in cross‑chain wallets, bridges, or portfolio trackers.
+
+```ts
+import { validateAny } from 'cryptovalid/any';
+
+const result = validateAny('0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045');
+
+if (result.isValid) {
+  console.log(result.chains);   // ['Ethereum', 'BNB', 'Polygon']
+  console.log(result.address);  // normalized lowercase address
+} else {
+  console.error(`${result.code}: ${result.message}`);
+}
+```
+
+`validateAny` uses fast heuristics to narrow candidates, then performs strict checksum validation only on plausible chains. On success, `result.chains` lists every valid chain; on failure, `result.code` gives the relevant error (`UNSUPPORTED_TYPE` if no chain matches, or a specific code like `INVALID_CHECKSUM`).
+
+A batch variant (`validateAnyBatch`) is also available and follows the same `{ address, id }` pattern as other batch validators.
+
+> **Bundle note:** Importing from `cryptovalid/any` includes **all** chain validators. For minimal bundle size, use dedicated imports (e.g. `cryptovalid/btc`).
+
 ## Error Codes
 
-Starting in **v0.4.0**, all failure results contain a **machine-readable `code`** alongside a human-friendly `message`.
-This allows you to build smart error handling, custom UI messages, analytics, and recovery flows without string parsing.
+All failure results contain a machine‑readable code and a human‑readable message. This allows you to build smart error handling, custom UI messages, analytics, and recovery flows without string parsing.
 
 ### Available Error Codes
 
@@ -124,11 +146,6 @@ if (!result.isValid) {
 ```
 
 You can also map codes to translations, icons, or severity levels.
-
-### Upgrading from v0.3.x
-
-- The old `{ isValid: false, error: string }` shape has been replaced by `{ isValid: false, code: ValidationErrorCode, message: string }`.
-- Old code accessing `result.error` should be updated to use `result.code` and `result.message`.
 
 ## Modular Imports
 
