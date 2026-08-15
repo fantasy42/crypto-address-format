@@ -39,7 +39,9 @@ export default {
       ...entries,
     },
     format: ['esm', 'cjs'],
-    dts: true,
+    dts: {
+      tsgo: true,
+    },
     unbundle: true,
     clean: true,
     treeshake: true,
