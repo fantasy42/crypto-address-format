@@ -198,7 +198,7 @@
     "prepare": "vp config"
   },
   "devDependencies": {
-    "@noble/hashes": "2.3.0",
+    "@noble/hashes": "2.4.0",
     "@types/node": "25.9.5",
     "bumpp": "12.2.0",
     "tinyglobby": "0.2.17",
